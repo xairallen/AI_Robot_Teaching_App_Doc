@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教师登录 - AI机器人教学APP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 自定义配色方案 - 专业教师版 */
+        :root {
+            --primary-blue: #2563EB;
+            --secondary-blue: #3B82F6;
+            --light-blue: #DBEAFE;
+            --dark-blue: #1E3A8A;
+            --accent-blue: #60A5FA;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+        }
+        
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #3B82F6 100%);
+            min-height: 100vh;
+        }
+        
+        .primary-bg { background-color: var(--primary-blue); }
+        .secondary-bg { background-color: var(--secondary-blue); }
+        .light-blue-bg { background-color: var(--light-blue); }
+        .dark-blue-bg { background-color: var(--dark-blue); }
+        
+        .primary-text { color: var(--primary-blue); }
+        .secondary-text { color: var(--secondary-blue); }
+        .dark-blue-text { color: var(--dark-blue); }
+        
+        .login-card {
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(15px);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .input-group {
+            position: relative;
+            margin-bottom: 24px;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 16px 16px 16px 48px;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: var(--gray-50);
+            font-weight: 500;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            background: white;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            font-size: 18px;
+            transition: color 0.3s ease;
+        }
+        
+        .input-field:focus + .input-icon {
+            color: var(--primary-blue);
+        }
+        
+        .login-button {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(37, 99, 235, 0.3);
+        }
+        
+        .login-button:active {
+            transform: translateY(0);
+        }
+        
+        .login-button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
+            animation: shine 3s infinite;
+            opacity: 0;
+        }
+        
+        .login-button:hover::before {
+            opacity: 1;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .floating-element {
+            position: absolute;
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(10deg); }
+        }
+        
+        .slide-in {
+            animation: slideIn 1s ease-out;
+        }
+        
+        @keyframes slideIn {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0px); }
+        }
+        
+        .professional-icon {
+            font-size: 4rem;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .captcha-container {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .captcha-input {
+            flex: 1;
+        }
+        
+        .captcha-image {
+            width: 120px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+            border: 2px solid var(--gray-200);
+        }
+        
+        .captcha-image:hover {
+            border-color: var(--primary-blue);
+            background: linear-gradient(135deg, var(--light-blue), var(--gray-100));
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+        
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .brand-logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin: 0 auto 16px;
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .login-card {
+                margin: 16px;
+                padding: 32px 24px;
+            }
+            
+            .professional-icon {
+                font-size: 3rem;
+            }
+            
+            .captcha-image {
+                width: 100px;
+                height: 36px;
+                font-size: 14px;
+            }
+            
+            .feature-item {
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .captcha-container {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .captcha-image {
+                width: 100%;
+                height: 40px;
+            }
+        }
+        
+        /* 加载状态 */
+        .loading {
+            position: relative;
+            pointer-events: none;
+        }
+        
+        .loading::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .loading::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid var(--primary-blue);
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 1;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 错误提示 */
+        .error-message {
+            color: #DC2626;
+            font-size: 14px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        /* 工号输入特殊样式 */
+        .employee-id-field {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <!-- 背景装饰元素 -->
+    <div class="floating-element top-16 left-16 text-6xl opacity-10">
+        <i class="fas fa-graduation-cap text-white"></i>
+    </div>
+    <div class="floating-element top-24 right-20 text-4xl opacity-10" style="animation-delay: -3s;">
+        <i class="fas fa-chalkboard-teacher text-white"></i>
+    </div>
+    <div class="floating-element bottom-20 left-20 text-5xl opacity-10" style="animation-delay: -6s;">
+        <i class="fas fa-book-open text-white"></i>
+    </div>
+    <div class="floating-element bottom-16 right-16 text-3xl opacity-10" style="animation-delay: -1s;">
+        <i class="fas fa-lightbulb text-white"></i>
+    </div>
+
+    <!-- 主登录区域 -->
+    <div class="w-full max-w-6xl grid lg:grid-cols-2 gap-12 items-center">
+        <!-- 左侧品牌介绍区域 -->
+        <div class="hidden lg:block text-white">
+            <div class="space-y-8">
+                <!-- 品牌标识 -->
+                <div class="text-center">
+                    <div class="brand-logo">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h1 class="text-4xl font-bold mb-4">AI机器人教学平台</h1>
+                    <p class="text-xl opacity-90">教师管理中心</p>
+                </div>
+                
+                <!-- 特色功能介绍 -->
+                <div class="space-y-4">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <span>智能班级管理，一键掌控学习进度</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <span>数据可视化分析，精准教学决策</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <span>AI辅助教学，个性化学习路径</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-cloud"></i>
+                        </div>
+                        <span>云端同步，随时随地管理课程</span>
+                    </div>
+                </div>
+                
+                <!-- 统计数字 -->
+                <div class="grid grid-cols-3 gap-8 pt-8 border-t border-white border-opacity-20">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold">500+</div>
+                        <div class="text-sm opacity-75">合作学校</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold">10K+</div>
+                        <div class="text-sm opacity-75">活跃教师</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold">50K+</div>
+                        <div class="text-sm opacity-75">学生用户</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧登录表单区域 -->
+        <div class="login-card w-full max-w-md mx-auto p-8 slide-in">
+            <!-- 移动端品牌标识 -->
+            <div class="lg:hidden text-center mb-8">
+                <div class="brand-logo">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h1 class="text-2xl font-bold primary-text mb-2">教师登录</h1>
+                <p class="text-gray-600">AI机器人教学平台</p>
+            </div>
+            
+            <!-- 桌面端标题 -->
+            <div class="hidden lg:block text-center mb-8">
+                <div class="professional-icon mb-4">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <h2 class="text-3xl font-bold dark-blue-text mb-2">教师登录</h2>
+                <p class="text-gray-600 text-lg">欢迎回到教学管理中心</p>
+            </div>
+
+            <!-- 登录表单 -->
+            <form id="teacherLoginForm" onsubmit="handleLogin(event)">
+                <!-- 教师工号输入 -->
+                <div class="input-group">
+                    <input type="text" class="input-field employee-id-field" placeholder="请输入教师工号" required id="employeeId" maxlength="10">
+                    <i class="input-icon fas fa-id-badge"></i>
+                    <div id="employeeIdError" class="error-message hidden">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>请输入有效的教师工号</span>
+                    </div>
+                </div>
+
+                <!-- 密码输入 -->
+                <div class="input-group">
+                    <input type="password" class="input-field" placeholder="请输入登录密码" required id="password" minlength="6">
+                    <i class="input-icon fas fa-lock"></i>
+                    <button type="button" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors" onclick="togglePassword()" style="right: 16px;">
+                        <i class="fas fa-eye" id="passwordToggle"></i>
+                    </button>
+                    <div id="passwordError" class="error-message hidden">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>密码长度至少6位</span>
+                    </div>
+                </div>
+
+                <!-- 验证码输入 -->
+                <div class="input-group">
+                    <div class="captcha-container">
+                        <div class="captcha-input">
+                            <input type="text" class="input-field" placeholder="请输入验证码" required id="captcha" maxlength="4" style="padding-left: 48px;">
+                            <i class="input-icon fas fa-shield-alt"></i>
+                        </div>
+                        <div class="captcha-image" onclick="refreshCaptcha()" id="captchaImage" title="点击刷新验证码">
+                            AB7K
+                        </div>
+                    </div>
+                    <div id="captchaError" class="error-message hidden">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>验证码错误，请重新输入</span>
+                    </div>
+                </div>
+
+                <!-- 记住登录和忘记密码 -->
+                <div class="flex items-center justify-between mb-6">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only" id="rememberMe">
+                        <div class="relative">
+                            <div class="w-5 h-5 bg-white border-2 border-gray-300 rounded flex items-center justify-center transition-all duration-200" id="checkboxDisplay">
+                                <i class="fas fa-check text-white text-xs opacity-0 transition-opacity duration-200" id="checkmark"></i>
+                            </div>
+                        </div>
+                        <span class="ml-3 text-gray-700 font-medium">记住登录状态</span>
+                    </label>
+                    <a href="#" class="text-sm primary-text hover:underline font-medium" onclick="showForgotPassword()">忘记密码？</a>
+                </div>
+
+                <!-- 登录按钮 -->
+                <button type="submit" class="login-button" id="loginBtn">
+                    <i class="fas fa-sign-in-alt mr-2"></i>
+                    立即登录
+                </button>
+            </form>
+
+            <!-- 底部信息 -->
+            <div class="text-center mt-8 pt-6 border-t border-gray-200">
+                <p class="text-sm text-gray-600 mb-4">
+                    遇到登录问题？
+                    <a href="#" class="primary-text hover:underline font-medium">联系技术支持</a>
+                </p>
+                <div class="flex items-center justify-center space-x-4 text-xs text-gray-500">
+                    <a href="#" class="hover:text-gray-700">使用条款</a>
+                    <span>|</span>
+                    <a href="#" class="hover:text-gray-700">隐私政策</a>
+                    <span>|</span>
+                    <a href="#" class="hover:text-gray-700">帮助中心</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 忘记密码模态框 -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300" id="forgotPasswordModal">
+        <div class="bg-white rounded-2xl p-8 w-full max-w-md mx-4 transform scale-95 transition-transform duration-300">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-key text-2xl primary-text"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">找回密码</h3>
+                <p class="text-gray-600">请联系系统管理员重置您的密码</p>
+            </div>
+            
+            <div class="space-y-4 mb-6">
+                <div class="flex items-center p-4 bg-blue-50 rounded-lg">
+                    <i class="fas fa-phone text-blue-600 mr-3"></i>
+                    <div>
+                        <div class="font-medium text-gray-800">技术支持热线</div>
+                        <div class="text-sm text-gray-600">400-123-4567</div>
+                    </div>
+                </div>
+                <div class="flex items-center p-4 bg-green-50 rounded-lg">
+                    <i class="fas fa-envelope text-green-600 mr-3"></i>
+                    <div>
+                        <div class="font-medium text-gray-800">邮箱支持</div>
+                        <div class="text-sm text-gray-600">support@airobot-edu.com</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-3">
+                <button class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors" onclick="closeForgotPassword()">
+                    取消
+                </button>
+                <button class="flex-1 px-4 py-2 primary-bg text-white rounded-lg hover:opacity-90 transition-opacity">
+                    联系支持
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentCaptcha = 'AB7K';
+        
+        // 密码显示切换
+        function togglePassword() {
+            const passwordField = document.getElementById('password');
+            const toggleIcon = document.getElementById('passwordToggle');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+        
+        // 刷新验证码
+        function refreshCaptcha() {
+            const captchaImage = document.getElementById('captchaImage');
+            const captchas = ['AB7K', 'CD9E', 'FG2H', 'JK5L', 'MN8P', 'QR3S', 'TU6V', 'WX1Y'];
+            currentCaptcha = captchas[Math.floor(Math.random() * captchas.length)];
+            
+            // 添加刷新动画
+            captchaImage.style.transform = 'rotateY(180deg)';
+            setTimeout(() => {
+                captchaImage.textContent = currentCaptcha;
+                captchaImage.style.transform = 'rotateY(0deg)';
+            }, 200);
+        }
+        
+        // 记住我复选框
+        document.getElementById('rememberMe').addEventListener('change', function() {
+            const checkboxDisplay = document.getElementById('checkboxDisplay');
+            const checkmark = document.getElementById('checkmark');
+            
+            if (this.checked) {
+                checkboxDisplay.style.backgroundColor = 'var(--primary-blue)';
+                checkboxDisplay.style.borderColor = 'var(--primary-blue)';
+                checkmark.style.opacity = '1';
+            } else {
+                checkboxDisplay.style.backgroundColor = 'white';
+                checkboxDisplay.style.borderColor = '#d1d5db';
+                checkmark.style.opacity = '0';
+            }
+        });
+        
+        // 表单验证
+        function validateForm() {
+            const employeeId = document.getElementById('employeeId').value;
+            const password = document.getElementById('password').value;
+            const captcha = document.getElementById('captcha').value;
+            
+            let isValid = true;
+            
+            // 重置错误信息
+            document.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
+            
+            // 验证工号
+            if (!employeeId || !/^[0-9]{6,10}$/.test(employeeId)) {
+                document.getElementById('employeeIdError').classList.remove('hidden');
+                isValid = false;
+            }
+            
+            // 验证密码
+            if (!password || password.length < 6) {
+                document.getElementById('passwordError').classList.remove('hidden');
+                isValid = false;
+            }
+            
+            // 验证验证码
+            if (!captcha || captcha.toUpperCase() !== currentCaptcha) {
+                document.getElementById('captchaError').classList.remove('hidden');
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+        
+        // 登录处理
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            if (!validateForm()) {
+                return;
+            }
+            
+            const employeeId = document.getElementById('employeeId').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            // 显示加载状态
+            loginBtn.classList.add('loading');
+            loginBtn.innerHTML = '<div class="loading-spinner"></div>';
+            loginBtn.disabled = true;
+            
+            // 模拟登录请求
+            setTimeout(() => {
+                // 模拟登录成功
+                loginBtn.innerHTML = '<i class="fas fa-check mr-2"></i>登录成功';
+                loginBtn.style.background = 'linear-gradient(135deg, #10B981, #059669)';
+                
+                setTimeout(() => {
+                    alert(`欢迎回来！\n工号: ${employeeId}\n即将跳转到教师工作台...`);
+                    
+                    // 重置按钮状态
+                    loginBtn.classList.remove('loading');
+                    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>立即登录';
+                    loginBtn.style.background = 'linear-gradient(135deg, var(--primary-blue), var(--secondary-blue))';
+                    loginBtn.disabled = false;
+                }, 1500);
+            }, 2000);
+        }
+        
+        // 显示忘记密码模态框
+        function showForgotPassword() {
+            const modal = document.getElementById('forgotPasswordModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.querySelector('.transform').classList.remove('scale-95');
+        }
+        
+        // 关闭忘记密码模态框
+        function closeForgotPassword() {
+            const modal = document.getElementById('forgotPasswordModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.querySelector('.transform').classList.add('scale-95');
+        }
+        
+        // 点击模态框外部关闭
+        document.getElementById('forgotPasswordModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeForgotPassword();
+            }
+        });
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为输入框添加焦点效果
+            const inputFields = document.querySelectorAll('.input-field');
+            inputFields.forEach(field => {
+                field.addEventListener('focus', function() {
+                    this.parentElement.querySelector('.input-icon').style.color = 'var(--primary-blue)';
+                });
+                
+                field.addEventListener('blur', function() {
+                    this.parentElement.querySelector('.input-icon').style.color = 'var(--gray-400)';
+                });
+            });
+            
+            // 工号输入格式化
+            document.getElementById('employeeId').addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+            
+            // 验证码输入大写转换
+            document.getElementById('captcha').addEventListener('input', function() {
+                this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            });
+        });
+        
+        // 键盘快捷键支持
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+Enter 快速登录
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('teacherLoginForm').requestSubmit();
+            }
+            // F5 刷新验证码
+            if (e.key === 'F5') {
+                e.preventDefault();
+                refreshCaptcha();
+            }
+        });
+        
+        // 自动刷新验证码（5分钟）
+        setInterval(refreshCaptcha, 300000);
+    </script>
+</body>
+</html>

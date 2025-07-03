@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - AI机器人教学APP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* 自定义配色方案 */
+        :root {
+            --primary-blue: #3498DB;
+            --secondary-blue: #AED6F1;
+            --vibrant-orange: #F39C12;
+            --friendly-green: #2ECC71;
+            --warm-red: #E74C3C;
+            --bright-yellow: #F1C40F;
+            --fresh-purple: #9B59B6;
+        }
+        
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .primary-bg { background-color: var(--primary-blue); }
+        .secondary-bg { background-color: var(--secondary-blue); }
+        .orange-bg { background-color: var(--vibrant-orange); }
+        .green-bg { background-color: var(--friendly-green); }
+        .red-bg { background-color: var(--warm-red); }
+        .yellow-bg { background-color: var(--bright-yellow); }
+        .purple-bg { background-color: var(--fresh-purple); }
+        
+        .primary-text { color: var(--primary-blue); }
+        .orange-text { color: var(--vibrant-orange); }
+        .green-text { color: var(--friendly-green); }
+        .red-text { color: var(--warm-red); }
+        .yellow-text { color: var(--bright-yellow); }
+        .purple-text { color: var(--fresh-purple); }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        /* 个人资料头像 */
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-blue), var(--friendly-green));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .avatar-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .profile-avatar:hover .avatar-overlay {
+            opacity: 1;
+        }
+        
+        /* 等级进度条 */
+        .level-progress {
+            width: 100%;
+            height: 12px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .level-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--vibrant-orange), var(--bright-yellow));
+            border-radius: 6px;
+            transition: width 1s ease;
+            position: relative;
+        }
+        
+        .level-bar::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+            animation: shine 2s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* 成就徽章 */
+        .achievement-badge {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .achievement-badge:hover {
+            transform: scale(1.1);
+        }
+        
+        .achievement-badge.locked {
+            background: #94a3b8;
+            opacity: 0.5;
+        }
+        
+        .achievement-badge::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+            animation: badgeShine 3s infinite;
+        }
+        
+        @keyframes badgeShine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* 技能树节点 */
+        .skill-node {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .skill-node:hover {
+            transform: scale(1.2);
+        }
+        
+        .skill-node.completed {
+            background: linear-gradient(135deg, var(--friendly-green), #58D68D);
+        }
+        
+        .skill-node.current {
+            background: linear-gradient(135deg, var(--vibrant-orange), #F7DC6F);
+            animation: pulse 2s infinite;
+        }
+        
+        .skill-node.locked {
+            background: #94a3b8;
+            opacity: 0.5;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        /* 连接线 */
+        .skill-connection {
+            position: absolute;
+            width: 2px;
+            background: #cbd5e0;
+            transition: background-color 0.3s ease;
+        }
+        
+        .skill-connection.completed {
+            background: var(--friendly-green);
+        }
+        
+        /* 作品卡片 */
+        .project-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .project-thumbnail {
+            height: 120px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            position: relative;
+        }
+        
+        .project-status {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .status-public { background: var(--friendly-green); }
+        .status-private { background: var(--vibrant-orange); }
+        .status-draft { background: #94a3b8; }
+        
+        /* 雷达图样式 */
+        .radar-chart {
+            width: 100%;
+            height: 300px;
+            position: relative;
+        }
+        
+        /* 统计数字 */
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        
+        /* 标签页切换 */
+        .tab-button {
+            padding: 12px 24px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .tab-button.active {
+            background: linear-gradient(135deg, var(--primary-blue), var(--friendly-green));
+            color: white;
+        }
+        
+        .tab-button:not(.active):hover {
+            background: rgba(52, 152, 219, 0.1);
+        }
+        
+        /* 设置项 */
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        
+        .toggle-switch {
+            width: 48px;
+            height: 24px;
+            background: #cbd5e0;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .toggle-switch.active {
+            background: var(--primary-blue);
+        }
+        
+        .toggle-slider {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+        }
+        
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(24px);
+        }
+        
+        /* 浮动元素 */
+        .floating-element {
+            position: absolute;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        /* 导航样式 */
+        .nav-item {
+            transition: all 0.3s ease;
+            border-radius: 15px;
+            flex: 1;
+        }
+        
+        .nav-item:hover {
+            transform: translateY(-3px);
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary-blue), var(--friendly-green));
+            color: white;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5rem;
+            }
+            
+            .achievement-badge {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            
+            .skill-node {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            
+            .stat-number {
+                font-size: 2rem;
+            }
+        }
+        
+        /* 加载动画 */
+        .loading-spinner {
+            border: 3px solid rgba(52, 152, 219, 0.3);
+            border-top: 3px solid var(--primary-blue);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="pb-20">
+    <!-- 背景装饰元素 -->
+    <div class="floating-element top-10 right-10 text-4xl opacity-10">
+        <i class="fas fa-crown" style="color: var(--bright-yellow);"></i>
+    </div>
+    <div class="floating-element top-1/4 left-10 text-3xl opacity-10" style="animation-delay: -2s;">
+        <i class="fas fa-medal" style="color: var(--vibrant-orange);"></i>
+    </div>
+    <div class="floating-element bottom-1/3 right-20 text-2xl opacity-10" style="animation-delay: -4s;">
+        <i class="fas fa-trophy" style="color: var(--friendly-green);"></i>
+    </div>
+
+    <!-- 顶部导航栏 -->
+    <div class="flex items-center justify-between p-4 bg-white shadow-sm">
+        <!-- 返回按钮和标题 -->
+        <div class="flex items-center space-x-3">
+            <button class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div>
+                <h1 class="text-xl font-bold primary-text">个人中心</h1>
+                <p class="text-sm text-gray-500">我的学习成果</p>
+            </div>
+        </div>
+        
+        <!-- 右侧控制 -->
+        <div class="flex items-center space-x-3">
+            <!-- 设置按钮 -->
+            <button class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors" onclick="toggleModal('settingsModal')">
+                <i class="fas fa-cog"></i>
+            </button>
+            <!-- 分享按钮 -->
+            <button class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                <i class="fas fa-share-alt"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="max-w-6xl mx-auto p-4 space-y-6">
+        <!-- 个人资料区 -->
+        <div class="card p-6">
+            <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                <!-- 头像区域 -->
+                <div class="flex flex-col items-center">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-astronaut"></i>
+                        <div class="avatar-overlay">
+                            <i class="fas fa-camera text-2xl"></i>
+                        </div>
+                    </div>
+                    <button class="mt-3 px-4 py-2 bg-gray-100 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors">
+                        更换头像
+                    </button>
+                </div>
+                
+                <!-- 基本信息 -->
+                <div class="flex-1 text-center md:text-left">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">小小探索家</h2>
+                    <p class="text-gray-600 mb-4">9岁 · 编程忍者等级</p>
+                    
+                    <!-- 等级和经验 -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-700">等级 8</span>
+                            <span class="text-sm text-gray-500">2150 / 2500 XP</span>
+                        </div>
+                        <div class="level-progress">
+                            <div class="level-bar" style="width: 86%;"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">还需要 350 XP 升到下一级</p>
+                    </div>
+                    
+                    <!-- 统计数据 -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="text-center">
+                            <div class="stat-number primary-text">42</div>
+                            <div class="stat-label">学习天数</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="stat-number orange-text">18</div>
+                            <div class="stat-label">完成项目</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="stat-number green-text">156</div>
+                            <div class="stat-label">学习小时</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="stat-number purple-text">25</div>
+                            <div class="stat-label">获得徽章</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 标签页导航 -->
+        <div class="flex flex-wrap gap-2 justify-center">
+            <button class="tab-button active" onclick="switchTab('achievements', this)">成就展示</button>
+            <button class="tab-button" onclick="switchTab('statistics', this)">学习统计</button>
+            <button class="tab-button" onclick="switchTab('creations', this)">创作中心</button>
+            <button class="tab-button" onclick="switchTab('collections', this)">我的收藏</button>
+        </div>
+
+        <!-- 成就展示区 -->
+        <div id="achievements" class="tab-content">
+            <!-- 徽章墙 -->
+            <div class="card p-6 mb-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-medal yellow-text mr-3"></i>
+                        徽章墙
+                    </h3>
+                    <span class="text-sm text-gray-500">25 / 50 个徽章</span>
+                </div>
+                
+                <div class="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-4">
+                    <!-- 已获得徽章 -->
+                    <div class="achievement-badge orange-bg" title="学习达人 - 连续学习7天">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="achievement-badge green-bg" title="编程新手 - 完成第一个程序">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <div class="achievement-badge purple-bg" title="机器人专家 - 完成机器人任务">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="achievement-badge red-bg" title="解谜高手 - 解决10个编程题">
+                        <i class="fas fa-puzzle-piece"></i>
+                    </div>
+                    <div class="achievement-badge yellow-bg" title="创意大师 - 创作5个原创项目">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div class="achievement-badge primary-bg" title="分享达人 - 分享10个作品">
+                        <i class="fas fa-share-alt"></i>
+                    </div>
+                    
+                    <!-- 未获得徽章 -->
+                    <div class="achievement-badge locked" title="AI大师 - 完成AI课程">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="achievement-badge locked" title="团队合作 - 参与协作项目">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="achievement-badge locked" title="导师 - 帮助其他学员">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <div class="achievement-badge locked" title="马拉松 - 连续学习30天">
+                        <i class="fas fa-running"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 解锁角色道具 -->
+            <div class="card p-6 mb-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-hat-wizard purple-text mr-3"></i>
+                    解锁角色道具
+                </h3>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="text-center p-4 bg-gray-50 rounded-xl">
+                        <div class="text-4xl mb-2">🤖</div>
+                        <h4 class="font-semibold text-gray-800">机器人助手</h4>
+                        <p class="text-sm text-gray-600">编程伙伴</p>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-xl">
+                        <div class="text-4xl mb-2">🚀</div>
+                        <h4 class="font-semibold text-gray-800">太空飞船</h4>
+                        <p class="text-sm text-gray-600">探索工具</p>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-xl">
+                        <div class="text-4xl mb-2">⚡</div>
+                        <h4 class="font-semibold text-gray-800">能量加速器</h4>
+                        <p class="text-sm text-gray-600">学习提升</p>
+                    </div>
+                    <div class="text-center p-4 bg-gray-50 rounded-xl opacity-50">
+                        <div class="text-4xl mb-2">🏆</div>
+                        <h4 class="font-semibold text-gray-800">黄金奖杯</h4>
+                        <p class="text-sm text-gray-600">未解锁</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 获得证书 -->
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-certificate green-text mr-3"></i>
+                    获得证书
+                </h3>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-xl text-white">
+                        <div class="flex items-center justify-between mb-4">
+                            <i class="fas fa-medal text-3xl"></i>
+                            <span class="text-sm opacity-75">2024.03.15</span>
+                        </div>
+                        <h4 class="text-xl font-bold mb-2">Python编程基础证书</h4>
+                        <p class="text-sm opacity-90">恭喜完成Python编程基础课程学习</p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-green-500 to-teal-600 p-6 rounded-xl text-white">
+                        <div class="flex items-center justify-between mb-4">
+                            <i class="fas fa-robot text-3xl"></i>
+                            <span class="text-sm opacity-75">2024.03.20</span>
+                        </div>
+                        <h4 class="text-xl font-bold mb-2">机器人控制专家证书</h4>
+                        <p class="text-sm opacity-90">成功掌握机器人编程控制技能</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 学习统计区 -->
+        <div id="statistics" class="tab-content hidden">
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- 学习时长图表 -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-chart-line primary-text mr-3"></i>
+                        学习时长统计
+                    </h3>
+                    <div class="mb-4">
+                        <div class="flex space-x-2">
+                            <button class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">日</button>
+                            <button class="px-3 py-1 text-gray-600 rounded-full text-sm font-medium hover:bg-gray-100">周</button>
+                            <button class="px-3 py-1 text-gray-600 rounded-full text-sm font-medium hover:bg-gray-100">月</button>
+                        </div>
+                    </div>
+                    <canvas id="studyTimeChart" width="400" height="200"></canvas>
+                </div>
+                
+                <!-- 知识覆盖雷达图 -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-chart-area green-text mr-3"></i>
+                        知识覆盖分析
+                    </h3>
+                    <div class="radar-chart">
+                        <canvas id="knowledgeRadarChart" width="300" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 技能树进度 -->
+            <div class="card p-6 mt-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-sitemap orange-text mr-3"></i>
+                    技能树进度
+                </h3>
+                
+                <div class="relative">
+                    <!-- 技能树可视化 -->
+                    <div class="flex flex-col items-center space-y-8">
+                        <!-- 第一层 - 基础 -->
+                        <div class="flex items-center space-x-12">
+                            <div class="skill-node completed" title="编程基础">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div class="skill-node completed" title="逻辑思维">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div class="skill-node completed" title="问题解决">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- 连接线 -->
+                        <div class="skill-connection completed" style="height: 40px; left: 50%;"></div>
+                        
+                        <!-- 第二层 - 进阶 -->
+                        <div class="flex items-center space-x-12">
+                            <div class="skill-node current" title="Python编程">
+                                <i class="fab fa-python"></i>
+                            </div>
+                            <div class="skill-node completed" title="机器人控制">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="skill-node locked" title="AI基础">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- 连接线 -->
+                        <div class="skill-connection" style="height: 40px; left: 50%;"></div>
+                        
+                        <!-- 第三层 - 高级 -->
+                        <div class="flex items-center space-x-12">
+                            <div class="skill-node locked" title="Web开发">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div class="skill-node locked" title="游戏开发">
+                                <i class="fas fa-gamepad"></i>
+                            </div>
+                            <div class="skill-node locked" title="AI应用">
+                                <i class="fas fa-magic"></i>
+                            </div>
+                        </div>

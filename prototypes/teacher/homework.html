@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作业管理 - AI机器人教学APP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* 专业教师端配色方案 */
+        :root {
+            --primary-blue: #2563EB;
+            --secondary-blue: #3B82F6;
+            --light-blue: #DBEAFE;
+            --dark-blue: #1E3A8A;
+            --accent-blue: #60A5FA;
+            --success-green: #059669;
+            --warning-orange: #D97706;
+            --danger-red: #DC2626;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+        }
+        
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+        
+        .primary-bg { background-color: var(--primary-blue); }
+        .secondary-bg { background-color: var(--secondary-blue); }
+        .light-blue-bg { background-color: var(--light-blue); }
+        .success-bg { background-color: var(--success-green); }
+        .warning-bg { background-color: var(--warning-orange); }
+        .danger-bg { background-color: var(--danger-red); }
+        
+        .primary-text { color: var(--primary-blue); }
+        .secondary-text { color: var(--secondary-blue); }
+        .success-text { color: var(--success-green); }
+        .warning-text { color: var(--warning-orange); }
+        .danger-text { color: var(--danger-red); }
+        
+        /* 仪表板卡片样式 */
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        
+        /* 作业卡片样式 */
+        .homework-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .homework-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .homework-card.selected {
+            border: 2px solid var(--primary-blue);
+            background: var(--light-blue);
+        }
+        
+        /* 状态标签 */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .status-published { background: var(--success-green); }
+        .status-draft { background: var(--gray-400); }
+        .status-pending { background: var(--warning-orange); }
+        .status-closed { background: var(--danger-red); }
+        .status-grading { background: var(--secondary-blue); }
+        
+        /* 进度环 */
+        .progress-ring {
+            width: 60px;
+            height: 60px;
+            position: relative;
+        }
+        
+        .progress-ring svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring-circle {
+            fill: none;
+            stroke-width: 4;
+            stroke-linecap: round;
+        }
+        
+        .progress-ring-bg {
+            stroke: var(--gray-200);
+        }
+        
+        .progress-ring-progress {
+            stroke: var(--primary-blue);
+            stroke-dasharray: 157;
+            stroke-dashoffset: 157;
+            transition: stroke-dashoffset 1s ease;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+        
+        /* 筛选标签 */
+        .filter-tag {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 2px solid var(--gray-200);
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .filter-tag:hover {
+            border-color: var(--primary-blue);
+            background: var(--light-blue);
+        }
+        
+        .filter-tag.active {
+            background: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+        }
+        
+        /* 搜索框 */
+        .search-box {
+            position: relative;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 48px 12px 16px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+        
+        .search-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .search-btn:hover {
+            background: var(--secondary-blue);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        /* 标签页 */
+        .tab-button {
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+        }
+        
+        .tab-button.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+        
+        .tab-button:not(.active):hover {
+            background: var(--light-blue);
+        }
+        
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+        
+        /* 批改界面样式 */
+        .grading-interface {
+            border-left: 4px solid var(--primary-blue);
+            background: var(--gray-50);
+        }
+        
+        .score-input {
+            width: 80px;
+            padding: 8px 12px;
+            border: 2px solid var(--gray-300);
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .score-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .comment-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 2px solid var(--gray-300);
+            border-radius: 8px;
+            resize: vertical;
+        }
+        
+        .comment-textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        /* 提交状态指示器 */
+        .submission-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-submitted { background: var(--success-green); }
+        .status-late { background: var(--warning-orange); }
+        .status-missing { background: var(--danger-red); }
+        .status-graded { background: var(--primary-blue); }
+        
+        /* 批量操作工具栏 */
+        .batch-toolbar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 16px;
+            padding: 16px 24px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .batch-toolbar.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        /* 统计数字 */
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+        
+        /* 截止时间警告 */
+        .deadline-warning {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .deadline-urgent {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--danger-red);
+        }
+        
+        .deadline-soon {
+            background: rgba(217, 119, 6, 0.1);
+            color: var(--warning-orange);
+        }
+        
+        .deadline-normal {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--success-green);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .homework-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .homework-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-tags {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 20px;
+            }
+        }
+        
+        /* 动画效果 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 图表容器 */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="flex items-center justify-between p-6 bg-white shadow-sm">
+        <!-- 左侧导航 -->
+        <div class="flex items-center space-x-4">
+            <button class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">作业管理</h1>
+                <p class="text-gray-600">创建和管理学生作业</p>
+            </div>
+        </div>
+        
+        <!-- 右侧控制区域 -->
+        <div class="flex items-center space-x-4">
+            <!-- 批量操作按钮 -->
+            <button class="success-bg text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2" onclick="batchGrade()">
+                <i class="fas fa-check-double"></i>
+                <span>批量批改</span>
+            </button>
+            <!-- 创建作业按钮 -->
+            <button class="primary-bg text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2" onclick="showCreateHomeworkModal()">
+                <i class="fas fa-plus"></i>
+                <span>创建作业</span>
+            </button>
+            <!-- 教师头像 -->
+            <div class="w-12 h-12 secondary-bg rounded-xl flex items-center justify-center text-white font-semibold text-lg">
+                王
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="max-w-7xl mx-auto p-6 space-y-8">
+        <!-- 作业统计概览 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- 总作业数 -->
+            <div class="dashboard-card p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="stat-number primary-text">32</div>
+                        <div class="stat-label">总作业数</div>
+                    </div>
+                    <div class="w-12 h-12 primary-bg rounded-xl flex items-center justify-center">
+                        <i class="fas fa-clipboard-list text-white"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 待批改 -->
+            <div class="dashboard-card p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="stat-number warning-text">15</div>
+                        <div class="stat-label">待批改</div>
+                    </div>
+                    <div class="w-12 h-12 warning-bg rounded-xl flex items-center justify-center">
+                        <i class="fas fa-clock text-white"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 已批改 -->
+            <div class="dashboard-card p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="stat-number success-text">142</div>
+                        <div class="stat-label">已批改</div>
+                    </div>
+                    <div class="w-12 h-12 success-bg rounded-xl flex items-center justify-center">
+                        <i class="fas fa-check-circle text-white"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 平均分 -->
+            <div class="dashboard-card p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="stat-number text-purple-500">85.2</div>
+                        <div class="stat-label">平均分</div>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 标签页导航和筛选 -->
+        <div class="dashboard-card p-6">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-2">
+                    <button class="tab-button active" onclick="switchTab('all', this)">
+                        <i class="fas fa-list mr-2"></i>全部作业 (32)
+                    </button>
+                    <button class="tab-button" onclick="switchTab('pending', this)">
+                        <i class="fas fa-clock mr-2"></i>待批改 (15)
+                    </button>
+                    <button class="tab-button" onclick="switchTab('graded', this)">
+                        <i class="fas fa-check-circle mr-2"></i>已批改 (17)
+                    </button>
+                    <button class="tab-button" onclick="switchTab('draft', this)">
+                        <i class="fas fa-edit mr-2"></i>草稿 (6)
+                    </button>
+                </div>
+                
+                <!-- 视图切换 -->
+                <div class="flex bg-gray-100 rounded-lg p-1">
+                    <button id="gridView" class="px-3 py-1 rounded text-sm font-medium bg-white shadow-sm primary-text" onclick="switchView('grid')">
+                        <i class="fas fa-th mr-1"></i>网格
+                    </button>
+                    <button id="listView" class="px-3 py-1 rounded text-sm font-medium text-gray-600 hover:text-gray-800" onclick="switchView('list')">
+                        <i class="fas fa-list mr-1"></i>列表
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 筛选和搜索区域 -->
+            <div class="mb-6">
+                <!-- 科目筛选 -->
+                <div class="mb-4">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-tags primary-text mr-2"></i>
+                        作业分类
+                    </h3>
+                    <div class="filter-tags flex flex-wrap gap-3">
+                        <div class="filter-tag active" data-category="all">
+                            <i class="fas fa-th-large mr-2"></i>全部作业
+                        </div>
+                        <div class="filter-tag" data-category="programming">
+                            <i class="fas fa-code mr-2"></i>编程练习
+                        </div>
+                        <div class="filter-tag" data-category="ai">
+                            <i class="fas fa-brain mr-2"></i>AI实验
+                        </div>
+                        <div class="filter-tag" data-category="robot">
+                            <i class="fas fa-robot mr-2"></i>机器人任务
+                        </div>
+                        <div class="filter-tag" data-category="math">
+                            <i class="fas fa-calculator mr-2"></i>数学思维
+                        </div>
+                        <div class="filter-tag" data-category="project">
+                            <i class="fas fa-project-diagram mr-2"></i>项目作业
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 搜索和筛选控制 -->
+                <div class="grid md:grid-cols-3 gap-4">
+                    <!-- 搜索框 -->
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="搜索作业标题或内容..." id="searchInput">
+                        <button class="search-btn" onclick="searchHomework()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- 班级筛选 -->
+                    <select class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" id="classFilter">
+                        <option value="all">全部班级</option>
+                        <option value="class1">五年级A班</option>
+                        <option value="class2">六年级B班</option>
+                        <option value="class3">四年级C班</option>
+                        <option value="class4">三年级D班</option>
+                        <option value="class5">六年级A班</option>
+                    </select>
+                    
+                    <!-- 状态筛选 -->
+                    <select class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" id="statusFilter">
+                        <option value="all">全部状态</option>
+                        <option value="published">已发布</option>
+                        <option value="grading">批改中</option>
+                        <option value="closed">已截止</option>
+                        <option value="draft">草稿</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 作业列表 -->
+        <div id="homeworkGridView" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 homework-grid">
+            <!-- 作业卡片1 - 待批改 -->
+            <div class="homework-card" data-category="programming" data-status="grading" onclick="selectHomework(this, 'hw1')">
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">Python循环练习</h3>
+                            <p class="text-sm text-gray-600 mb-2">五年级A班 · 编程练习</p>
+                            <p class="text-xs text-gray-500">完成5道Python循环结构编程题</p>
+                        </div>
+                        <div class="status-badge status-grading">
+                            <i class="fas fa-clock text-xs"></i>
+                            批改中
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold primary-text">28</div>
+                            <div class="text-xs text-gray-600">总人数</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold warning-text">15</div>
+                            <div class="text-xs text-gray-600">待批改</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between text-sm mb-2">
+                            <span class="text-gray-600">批改进度</span>
+                            <span class="font-semibold">46%</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-200 rounded-full">
+                            <div class="h-full warning-bg rounded-full transition-all duration-500" style="width: 46%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2 text-sm text-gray-600">
+                        <div class="flex items-center justify-between">
+                            <span>发布时间</span>
+                            <span>2024-03-20 09:00</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>截止时间</span>
+                            <span class="text-red-600 font-medium">明天 18:00</span>
+                        </div>
+                        <div class="deadline-warning deadline-urgent">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>24小时后截止</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 作业卡片2 - 已发布 -->
+            <div class="homework-card" data-category="ai" data-status="published" onclick="selectHomework(this, 'hw2')">
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">图像识别实验</h3>
+                            <p class="text-sm text-gray-600 mb-2">六年级B班 · AI实验</p>
+                            <p class="text-xs text-gray-500">训练图像分类模型识别动物</p>
+                        </div>
+                        <div class="status-badge status-published">
+                            <i class="fas fa-circle text-xs"></i>
+                            已发布
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold primary-text">25</div>
+                            <div class="text-xs text-gray-600">总人数</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold success-text">18</div>
+                            <div class="text-xs text-gray-600">已提交</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between text-sm mb-2">
+                            <span class="text-gray-600">提交进度</span>
+                            <span class="font-semibold">72%</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-200 rounded-full">
+                            <div class="h-full success-bg rounded-full transition-all duration-500" style="width: 72%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2 text-sm text-gray-600">
+                        <div class="flex items-center justify-between">
+                            <span>发布时间</span>
+                            <span>2024-03-19 14:00</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>截止时间</span>
+                            <span class="text-green-600 font-medium">后天 20:00</span>
+                        </div>
+                        <div class="deadline-warning deadline-normal">
+                            <i class="fas fa-check"></i>
+                            <span>还有2天时间</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 作业卡片3 - 草稿 -->
+            <div class="homework-card" data-category="robot" data-status="draft" onclick="selectHomework(this, 'hw3')">
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">机器人迷宫挑战</h3>
+                            <p class="text-sm text-gray-600 mb-2">四年级C班 · 机器人任务</p>
+                            <p class="text-xs text-gray-500">编程控制机器人走出迷宫</p>
+                        </div>
+                        <div class="status-badge status-draft">
+                            <i class="fas fa-edit text-xs"></i>
+                            草稿
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-gray-400">32</div>
+                            <div class="text-xs text-gray-600">目标人数</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-gray-400">0</div>
+                            <div class

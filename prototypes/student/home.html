@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生首页 - AI机器人教学APP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 自定义配色方案 */
+        :root {
+            --primary-blue: #3498DB;
+            --secondary-blue: #AED6F1;
+            --vibrant-orange: #F39C12;
+            --friendly-green: #2ECC71;
+            --warm-red: #E74C3C;
+            --bright-yellow: #F1C40F;
+            --fresh-purple: #9B59B6;
+        }
+        
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .primary-bg { background-color: var(--primary-blue); }
+        .secondary-bg { background-color: var(--secondary-blue); }
+        .orange-bg { background-color: var(--vibrant-orange); }
+        .green-bg { background-color: var(--friendly-green); }
+        .red-bg { background-color: var(--warm-red); }
+        .yellow-bg { background-color: var(--bright-yellow); }
+        .purple-bg { background-color: var(--fresh-purple); }
+        
+        .primary-text { color: var(--primary-blue); }
+        .orange-text { color: var(--vibrant-orange); }
+        .green-text { color: var(--friendly-green); }
+        .red-text { color: var(--warm-red); }
+        .yellow-text { color: var(--bright-yellow); }
+        .purple-text { color: var(--fresh-purple); }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .progress-circle {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(var(--friendly-green) 0deg 252deg, #e5e7eb 252deg 360deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .progress-circle::before {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+        }
+        
+        .progress-text {
+            position: relative;
+            z-index: 1;
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: var(--friendly-green);
+        }
+        
+        .nav-item {
+            transition: all 0.3s ease;
+            border-radius: 15px;
+            flex: 1;
+        }
+        
+        .nav-item:hover {
+            transform: translateY(-3px);
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary-blue), var(--friendly-green));
+            color: white;
+        }
+        
+        .course-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+        
+        .course-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .achievement-badge {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .achievement-badge::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+            animation: shine 2s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .floating-element {
+            position: absolute;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .welcome-animation {
+            animation: welcomeIn 1s ease-out;
+        }
+        
+        @keyframes welcomeIn {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .stagger-animation {
+            animation: staggerIn 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        
+        @keyframes staggerIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .progress-circle {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .progress-circle::before {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .progress-text {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body class="pb-20">
+    <!-- 背景装饰元素 -->
+    <div class="floating-element top-10 right-10 text-4xl opacity-10">
+        <i class="fas fa-star" style="color: var(--bright-yellow);"></i>
+    </div>
+    <div class="floating-element top-1/3 left-10 text-5xl opacity-10" style="animation-delay: -2s;">
+        <i class="fas fa-rocket" style="color: var(--vibrant-orange);"></i>
+    </div>
+    <div class="floating-element bottom-1/3 right-20 text-3xl opacity-10" style="animation-delay: -4s;">
+        <i class="fas fa-trophy" style="color: var(--friendly-green);"></i>
+    </div>
+
+    <!-- 顶部导航栏 -->
+    <div class="flex items-center justify-between p-4 bg-white shadow-sm">
+        <!-- APP标志 -->
+        <div class="flex items-center space-x-2">
+            <div class="w-10 h-10 primary-bg rounded-full flex items-center justify-center">
+                <i class="fas fa-robot text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold primary-text">AI小助手</h1>
+            </div>
+        </div>
+        
+        <!-- 右侧控制 -->
+        <div class="flex items-center space-x-3">
+            <!-- 家长控制入口 -->
+            <button class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                <i class="fas fa-cog text-sm"></i>
+            </button>
+            <!-- 个人头像 -->
+            <div class="w-10 h-10 orange-bg rounded-full flex items-center justify-center">
+                <i class="fas fa-user text-white"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="max-w-4xl mx-auto p-4 space-y-6">
+        <!-- 欢迎区域 -->
+        <div class="card p-6 welcome-animation">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                        <span class="wave-emoji">👋</span> 你好，小明！
+                    </h2>
+                    <p class="text-gray-600">今天也要加油学习哦！</p>
+                </div>
+                <div class="progress-circle">
+                    <div class="progress-text">70%</div>
+                </div>
+            </div>
+            
+            <!-- 今日学习建议 -->
+            <div class="primary-bg text-white p-4 rounded-2xl">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-lightbulb text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">今日建议</h3>
+                        <p class="text-sm opacity-90">继续学习Python基础，完成机器人控制练习</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 继续学习卡片 -->
+        <div class="card p-6 stagger-animation" style="animation-delay: 0.2s;">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-play-circle green-text mr-2"></i>
+                    继续学习
+                </h3>
+                <span class="text-sm text-gray-500">还剩15分钟</span>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+                <!-- 当前课程 -->
+                <div class="bg-gradient-to-r from-blue-500 to-purple-600 p-4 rounded-2xl text-white">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-python text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">Python编程基础</h4>
+                            <p class="text-sm opacity-90">第3章：循环结构</p>
+                        </div>
+                    </div>
+                    <div class="w-full h-2 bg-white bg-opacity-20 rounded-full mb-3">
+                        <div class="h-full bg-white rounded-full" style="width: 65%;"></div>
+                    </div>
+                    <button class="w-full bg-white text-blue-600 py-2 rounded-xl font-semibold hover:bg-opacity-90 transition-colors">
+                        继续学习
+                    </button>
+                </div>
+                
+                <!-- 机器人任务 -->
+                <div class="bg-gradient-to-r from-green-500 to-teal-600 p-4 rounded-2xl text-white">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-robot text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">机器人任务</h4>
+                            <p class="text-sm opacity-90">迷宫探索挑战</p>
+                        </div>
+                    </div>
+                    <div class="w-full h-2 bg-white bg-opacity-20 rounded-full mb-3">
+                        <div class="h-full bg-white rounded-full" style="width: 40%;"></div>
+                    </div>
+                    <button class="w-full bg-white text-green-600 py-2 rounded-xl font-semibold hover:bg-opacity-90 transition-colors">
+                        开始挑战
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 推荐课程轮播 -->
+        <div class="card p-6 stagger-animation" style="animation-delay: 0.4s;">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-star orange-text mr-2"></i>
+                    推荐课程
+                </h3>
+                <button class="text-sm primary-text hover:underline">查看更多</button>
+            </div>
+            
+            <div class="flex space-x-4 overflow-x-auto pb-2">
+                <!-- 课程卡片1 -->
+                <div class="course-card flex-shrink-0">
+                    <div class="h-32 bg-gradient-to-br from-pink-400 to-red-500 flex items-center justify-center">
+                        <i class="fas fa-gamepad text-4xl text-white"></i>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-semibold text-gray-800 mb-1">游戏编程入门</h4>
+                        <p class="text-sm text-gray-600 mb-2">制作你的第一个小游戏</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex">
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <i class="fas fa-star text-gray-300"></i>
+                            </div>
+                            <span class="text-xs text-gray-500">30分钟</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 课程卡片2 -->
+                <div class="course-card flex-shrink-0">
+                    <div class="h-32 bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center">
+                        <i class="fas fa-brain text-4xl text-white"></i>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-semibold text-gray-800 mb-1">AI智能助手</h4>
+                        <p class="text-sm text-gray-600 mb-2">创建你的聊天机器人</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex">
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <i class="fas fa-star text-yellow-400"></i>
+                            </div>
+                            <span class="text-xs text-gray-500">45分钟</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 课程卡片3 -->
+                <div class="course-card flex-shrink-0">
+                    <div class="h-32 bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center">
+                        <i class="fas fa-car text-4xl text-white"></i>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-semibold text-gray-800 mb-1">自动驾驶车</h4>
+                        <p class="text-sm text-gray-600 mb-2">编程控制智能小车</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex">
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <i class="fas fa-star text-gray-300"></i>
+                                <i class="fas fa-star text-gray-300"></i>
+                            </div>
+                            <span class="text-xs text-gray-500">25分钟</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 最近成就展示 -->
+        <div class="card p-6 stagger-animation" style="animation-delay: 0.6s;">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-trophy yellow-text mr-2"></i>
+                    最近成就
+                </h3>
+                <button class="text-sm primary-text hover:underline">成就中心</button>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- 成就徽章1 -->
+                <div class="text-center">
+                    <div class="achievement-badge orange-bg mx-auto mb-2">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <h4 class="text-sm font-semibold text-gray-800">学习达人</h4>
+                    <p class="text-xs text-gray-600">连续学习7天</p>
+                </div>
+                
+                <!-- 成就徽章2 -->
+                <div class="text-center">
+                    <div class="achievement-badge green-bg mx-auto mb-2">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <h4 class="text-sm font-semibold text-gray-800">编程新手</h4>
+                    <p class="text-xs text-gray-600">完成第一个程序</p>
+                </div>
+                
+                <!-- 成就徽章3 -->
+                <div class="text-center">
+                    <div class="achievement-badge purple-bg mx-auto mb-2">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h4 class="text-sm font-semibold text-gray-800">机器人专家</h4>
+                    <p class="text-xs text-gray-600">完成机器人任务</p>
+                </div>
+                
+                <!-- 成就徽章4 -->
+                <div class="text-center">
+                    <div class="achievement-badge red-bg mx-auto mb-2">
+                        <i class="fas fa-puzzle-piece"></i>
+                    </div>
+                    <h4 class="text-sm font-semibold text-gray-800">解谜高手</h4>
+                    <p class="text-xs text-gray-600">解决10个编程题</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="flex items-center justify-around py-3">
+                <!-- 首页 -->
+                <button class="nav-item active flex flex-col items-center py-2 px-3">
+                    <i class="fas fa-home text-xl mb-1"></i>
+                    <span class="text-xs font-medium">首页</span>
+                </button>
+                
+                <!-- 课程 -->
+                <button class="nav-item flex flex-col items-center py-2 px-3 text-gray-600 hover:text-gray-800">
+                    <i class="fas fa-book text-xl mb-1"></i>
+                    <span class="text-xs font-medium">课程</span>
+                </button>
+                
+                <!-- 编程工作室 -->
+                <button class="nav-item flex flex-col items-center py-2 px-3 text-gray-600 hover:text-gray-800">
+                    <i class="fas fa-code text-xl mb-1"></i>
+                    <span class="text-xs font-medium">编程</span>
+                </button>
+                
+                <!-- 机器人实验室 -->
+                <button class="nav-item flex flex-col items-center py-2 px-3 text-gray-600 hover:text-gray-800">
+                    <i class="fas fa-robot text-xl mb-1"></i>
+                    <span class="text-xs font-medium">机器人</span>
+                </button>
+                
+                <!-- 我的 -->
+                <button class="nav-item flex flex-col items-center py-2 px-3 text-gray-600 hover:text-gray-800">
+                    <i class="fas fa-user text-xl mb-1"></i>
+                    <span class="text-xs font-medium">我的</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载动画
+        document.addEventListener('DOMContentLoaded', function() {
+            // 逐个显示动画元素
+            const staggerElements = document.querySelectorAll('.stagger-animation');
+            staggerElements.forEach((element, index) => {
+                setTimeout(() => {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+            
+            // 欢迎手势动画
+            const waveEmoji = document.querySelector('.wave-emoji');
+            setInterval(() => {
+                waveEmoji.style.transform = 'rotate(20deg)';
+                setTimeout(() => {
+                    waveEmoji.style.transform = 'rotate(-20deg)';
+                    setTimeout(() => {
+                        waveEmoji.style.transform = 'rotate(0deg)';
+                    }, 200);
+                }, 200);
+            }, 3000);
+            
+            // 进度圆环动画
+            animateProgress();
+            
+            // 课程轮播自动滚动
+            setupCourseCarousel();
+        });
+        
+        // 进度圆环动画
+        function animateProgress() {
+            const progressCircle = document.querySelector('.progress-circle');
+            const progressText = document.querySelector('.progress-text');
+            
+            let progress = 0;
+            const targetProgress = 70;
+            const duration = 2000; // 2秒
+            const steps = 60;
+            const increment = targetProgress / steps;
+            const interval = duration / steps;
+            
+            const timer = setInterval(() => {
+                progress += increment;
+                if (progress >= targetProgress) {
+                    progress = targetProgress;
+                    clearInterval(timer);
+                }
+                
+                const angle = (progress / 100) * 360;
+                progressCircle.style.background = `conic-gradient(var(--friendly-green) 0deg ${angle}deg, #e5e7eb ${angle}deg 360deg)`;
+                progressText.textContent = Math.round(progress) + '%';
+            }, interval);
+        }
+        
+        // 课程轮播设置
+        function setupCourseCarousel() {
+            const carousel = document.querySelector('.flex.space-x-4.overflow-x-auto');
+            let isScrolling = false;
+            
+            // 自动滚动
+            setInterval(() => {
+                if (!isScrolling) {
+                    const scrollWidth = carousel.scrollWidth;
+                    const clientWidth = carousel.clientWidth;
+                    const maxScroll = scrollWidth - clientWidth;
+                    
+                    if (carousel.scrollLeft >= maxScroll) {
+                        carousel.scrollTo({ left: 0, behavior: 'smooth' });
+                    } else {
+                        carousel.scrollBy({ left: 220, behavior: 'smooth' });
+                    }
+                }
+            }, 5000);
+            
+            // 检测用户滚动
+            carousel.addEventListener('scroll', () => {
+                isScrolling = true;
+                clearTimeout(carousel.scrollTimeout);
+                carousel.scrollTimeout = setTimeout(() => {
+                    isScrolling = false;
+                }, 2000);
+            });
+        }
+        
+        // 导航切换
+        function switchTab(tabElement, tabName) {
+            // 移除所有活动状态
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                item.classList.add('text-gray-600');
+            });
+            
+            // 激活当前选项
+            tabElement.classList.add('active');
+            tabElement.classList.remove('text-gray-600');
+            
+            // 模拟页面切换
+            console.log('切换到:', tabName);
+        }
+        
+        // 添加点击事件到导航项
+        document.querySelectorAll('.nav-item').forEach((item, index) => {
+            const tabNames = ['首页', '课程', '编程', '机器人', '我的'];
+            item.addEventListener('click', () => {
+                if (index !== 0) { // 首页保持激活状态
+                    switchTab(item, tabNames[index]);
+                }
+            });
+        });
+        
+        // 成就徽章点击效果
+        document.querySelectorAll('.achievement-badge').forEach(badge => {
+            badge.addEventListener('click', function() {
+                // 添加点击动画
+                this.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 200);
+                
+                // 显示成就详情（模拟）
+                const achievementName = this.parentElement.querySelector('h4').textContent;
+                showAchievementDetail(achievementName);
+            });
+        });
+        
+        // 显示成就详情
+        function showAchievementDetail(name) {
+            const detail = {
+                '学习达人': '恭喜你连续学习7天！坚持是成功的关键。',
+                '编程新手': '你已经迈出了编程的第一步，继续加油！',
+                '机器人专家': '成功控制机器人完成任务，你真棒！',
+                '解谜高手': '解决了10个编程问题，逻辑思维很强！'
+            };
+            
+            alert(`🏆 ${name}\n\n${detail[name] || '这是一个特殊的成就！'}`);
+        }
+        
+        // 添加课程卡片点击效果
+        document.querySelectorAll('.course-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const courseName = this.querySelector('h4').textContent;
+                alert(`即将进入课程：${courseName}`);
+            });
+        });
+        
+        // 继续学习按钮点击
+        document.querySelectorAll('button:contains("继续学习"), button:contains("开始挑战")').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const courseName = this.closest('.bg-gradient-to-r').querySelector('h4').textContent;
+                alert(`准备开始学习：${courseName}`);
+            });
+        });
+    </script>
+</body>
+</html>

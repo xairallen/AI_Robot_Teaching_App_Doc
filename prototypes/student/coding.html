@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编程工作台 - AI机器人教学APP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* 自定义配色方案 */
+        :root {
+            --primary-blue: #3498DB;
+            --secondary-blue: #AED6F1;
+            --vibrant-orange: #F39C12;
+            --friendly-green: #2ECC71;
+            --warm-red: #E74C3C;
+            --bright-yellow: #F1C40F;
+            --fresh-purple: #9B59B6;
+            
+            /* 代码块颜色系统 */
+            --motion-color: #4A90E2;
+            --looks-color: #9013FE;
+            --sound-color: #F44336;
+            --events-color: #FF9800;
+            --control-color: #FFC107;
+            --sensing-color: #4CAF50;
+            --operators-color: #00BCD4;
+            --variables-color: #E91E63;
+        }
+        
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .primary-bg { background-color: var(--primary-blue); }
+        .secondary-bg { background-color: var(--secondary-blue); }
+        .orange-bg { background-color: var(--vibrant-orange); }
+        .green-bg { background-color: var(--friendly-green); }
+        .red-bg { background-color: var(--warm-red); }
+        .yellow-bg { background-color: var(--bright-yellow); }
+        .purple-bg { background-color: var(--fresh-purple); }
+        
+        .primary-text { color: var(--primary-blue); }
+        .orange-text { color: var(--vibrant-orange); }
+        .green-text { color: var(--friendly-green); }
+        .red-text { color: var(--warm-red); }
+        
+        /* 代码块面板样式 */
+        .code-blocks-panel {
+            width: 25%;
+            min-width: 200px;
+            max-width: 350px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .category-tab {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+        
+        .category-tab:hover {
+            background: rgba(52, 152, 219, 0.1);
+        }
+        
+        .category-tab.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+        
+        .code-block-item {
+            padding: 8px 12px;
+            margin: 4px 8px;
+            border-radius: 12px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            position: relative;
+            user-select: none;
+        }
+        
+        .code-block-item:hover {
+            transform: translateX(4px) scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .code-block-item:active {
+            cursor: grabbing;
+        }
+        
+        .code-block-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+        
+        /* 代码块类型样式 */
+        .motion-block { background: linear-gradient(135deg, var(--motion-color), #5BA3F3); }
+        .looks-block { background: linear-gradient(135deg, var(--looks-color), #A855F7); }
+        .sound-block { background: linear-gradient(135deg, var(--sound-color), #F87171); }
+        .events-block { background: linear-gradient(135deg, var(--events-color), #FBB040); }
+        .control-block { background: linear-gradient(135deg, var(--control-color), #FDD835); color: #333; }
+        .sensing-block { background: linear-gradient(135deg, var(--sensing-color), #66BB6A); }
+        .operators-block { background: linear-gradient(135deg, var(--operators-color), #4DD0E1); }
+        .variables-block { background: linear-gradient(135deg, var(--variables-color), #F06292); }
+        
+        /* 编程画布样式 */
+        .coding-canvas {
+            flex: 1;
+            background: #f8fafc;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .canvas-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background-image: 
+                linear-gradient(#ccc 1px, transparent 1px),
+                linear-gradient(90deg, #ccc 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .canvas-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            overflow: auto;
+        }
+        
+        .dropped-block {
+            position: absolute;
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            font-weight: 500;
+            cursor: move;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .dropped-block:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .dropped-block.selected {
+            outline: 3px solid #fff;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 6px rgba(52, 152, 219, 0.3);
+        }
+        
+        .dropped-block.executing {
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .connection-line {
+            position: absolute;
+            height: 2px;
+            background: #ccc;
+            border-radius: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        .connection-line.active {
+            background: var(--primary-blue);
+            height: 3px;
+        }
+        
+        /* 属性面板样式 */
+        .properties-panel {
+            width: 25%;
+            min-width: 180px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .property-item {
+            margin-bottom: 16px;
+        }
+        
+        .property-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        .property-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .property-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .property-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e7eb;
+            outline: none;
+            appearance: none;
+        }
+        
+        .property-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            cursor: pointer;
+        }
+        
+        /* 底部工具栏样式 */
+        .bottom-toolbar {
+            height: 80px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 0 20px;
+        }
+        
+        .toolbar-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+        }
+        
+        .toolbar-btn:hover {
+            background: rgba(52, 152, 219, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .toolbar-btn.primary {
+            background: linear-gradient(135deg, var(--primary-blue), var(--friendly-green));
+            color: white;
+        }
+        
+        .toolbar-btn.primary:hover {
+            background: linear-gradient(135deg, #2980b9, #27ae60);
+        }
+        
+        .toolbar-btn-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        .toolbar-btn-text {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        /* 拖拽预览样式 */
+        .drag-preview {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.8;
+            transform: rotate(5deg);
+            transition: none;
+        }
+        
+        /* 放置区域高亮 */
+        .drop-zone {
+            border: 2px dashed var(--primary-blue);
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 12px;
+        }
+        
+        /* 代码预览模式 */
+        .code-preview {
+            background: #1e293b;
+            color: #e2e8f0;
+            font-family: 'Fira Code', monospace;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-y: auto;
+            height: 300px;
+        }
+        
+        .code-preview .keyword { color: #60a5fa; font-weight: bold; }
+        .code-preview .string { color: #34d399; }
+        .code-preview .number { color: #f87171; }
+        .code-preview .comment { color: #94a3b8; font-style: italic; }
+        .code-preview .function { color: #a78bfa; }
+        
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .code-blocks-panel {
+                width: 30%;
+                min-width: 180px;
+            }
+            
+            .properties-panel {
+                width: 30%;
+                min-width: 160px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .code-blocks-panel {
+                position: absolute;
+                left: -100%;
+                width: 280px;
+                height: calc(100% - 80px);
+                z-index: 10;
+                transition: left 0.3s ease;
+            }
+            
+            .code-blocks-panel.open {
+                left: 0;
+            }
+            
+            .properties-panel {
+                position: absolute;
+                right: -100%;
+                width: 280px;
+                height: calc(100% - 80px);
+                z-index: 10;
+                transition: right 0.3s ease;
+            }
+            
+            .properties-panel.open {
+                right: 0;
+            }
+            
+            .coding-canvas {
+                width: 100%;
+            }
+        }
+        
+        /* 错误提示样式 */
+        .error-indicator {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            background: var(--warm-red);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            animation: bounce 0.5s ease-in-out;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .error-block {
+            outline: 2px dashed var(--warm-red);
+            outline-offset: 4px;
+        }
+        
+        /* 工具提示样式 */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+            pointer-events: none;
+        }
+        
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border: 5px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <!-- 主容器 -->
+    <div class="flex flex-col h-screen">
+        <!-- 顶部导航栏 -->
+        <div class="flex items-center justify-between p-4 bg-white shadow-sm">
+            <!-- 左侧控制 -->
+            <div class="flex items-center space-x-3">
+                <button class="md:hidden w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors" onclick="togglePanel('blocks')">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 primary-bg rounded-full flex items-center justify-center">
+                        <i class="fas fa-code text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold primary-text">编程工作台</h1>
+                        <p class="text-sm text-gray-500">拖拽代码块创建程序</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧控制 -->
+            <div class="flex items-center space-x-3">
+                <!-- 视图切换 -->
+                <div class="flex bg-gray-100 rounded-lg p-1">
+                    <button id="visualMode" class="px-3 py-1 rounded text-sm font-medium bg-white shadow-sm primary-text">可视化</button>
+                    <button id="codeMode" class="px-3 py-1 rounded text-sm font-medium text-gray-600 hover:text-gray-800">代码</button>
+                </div>
+                <!-- 属性面板切换 -->
+                <button class="md:hidden w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors" onclick="togglePanel('properties')">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <!-- 个人头像 -->
+                <div class="w-10 h-10 orange-bg rounded-full flex items-center justify-center">
+                    <i class="fas fa-user text-white"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主工作区域 -->
+        <div class="flex flex-1 overflow-hidden">
+            <!-- 左侧代码块面板 -->
+            <div class="code-blocks-panel" id="blocksPanel">
+                <!-- 搜索栏 -->
+                <div class="p-4 border-b border-gray-200">
+                    <div class="relative">
+                        <input type="text" placeholder="搜索代码块..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <!-- 分类标签 -->
+                <div class="category-tabs">
+                    <div class="category-tab active" data-category="motion" onclick="switchCategory('motion', this)">
+                        <i class="fas fa-running mr-2" style="color: var(--motion-color);"></i>
+                        运动
+                    </div>
+                    <div class="category-tab" data-category="looks" onclick="switchCategory('looks', this)">
+                        <i class="fas fa-palette mr-2" style="color: var(--looks-color);"></i>
+                        外观
+                    </div>
+                    <div class="category-tab" data-category="sound" onclick="switchCategory('sound', this)">
+                        <i class="fas fa-volume-up mr-2" style="color: var(--sound-color);"></i>
+                        声音
+                    </div>
+                    <div class="category-tab" data-category="events" onclick="switchCategory('events', this)">
+                        <i class="fas fa-play mr-2" style="color: var(--events-color);"></i>
+                        事件
+                    </div>
+                    <div class="category-tab" data-category="control" onclick="switchCategory('control', this)">
+                        <i class="fas fa-cogs mr-2" style="color: var(--control-color);"></i>
+                        控制
+                    </div>
+                    <div class="category-tab" data-category="sensing" onclick="switchCategory('sensing', this)">
+                        <i class="fas fa-eye mr-2" style="color: var(--sensing-color);"></i>
+                        侦测
+                    </div>
+                    <div class="category-tab" data-category="operators" onclick="switchCategory('operators', this)">
+                        <i class="fas fa-calculator mr-2" style="color: var(--operators-color);"></i>
+                        运算
+                    </div>
+                    <div class="category-tab" data-category="variables" onclick="switchCategory('variables', this)">
+                        <i class="fas fa-database mr-2" style="color: var(--variables-color);"></i>
+                        变量
+                    </div>
+                </div>
+                
+                <!-- 代码块列表 -->
+                <div class="flex-1 overflow-y-auto p-4" id="blocksList">
+                    <!-- 运动类代码块 -->
+                    <div class="blocks-category active" data-category="motion">
+                        <div class="code-block-item motion-block" draggable="true" data-type="move">
+                            <i class="fas fa-arrow-right mr-2"></i>移动 10 步
+                        </div>
+                        <div class="code-block-item motion-block" draggable="true" data-type="turn-right">
+                            <i class="fas fa-redo mr-2"></i>右转 15 度
+                        </div>
+                        <div class="code-block-item motion-block" draggable="true" data-type="turn-left">
+                            <i class="fas fa-undo mr-2"></i>左转 15 度
+                        </div>
+                        <div class="code-block-item motion-block" draggable="true" data-type="goto">
+                            <i class="fas fa-crosshairs mr-2"></i>前往 x:0 y:0
+                        </div>
+                        <div class="code-block-item motion-block" draggable="true" data-type="point-direction">
+                            <i class="fas fa-compass mr-2"></i>面向 90 度方向
+                        </div>
+                    </div>
+                    
+                    <!-- 外观类代码块 -->
+                    <div class="blocks-category" data-category="looks">
+                        <div class="code-block-item looks-block" draggable="true" data-type="say">
+                            <i class="fas fa-comment mr-2"></i>说 Hello
+                        </div>
+                        <div class="code-block-item looks-block" draggable="true" data-type="think">
+                            <i class="fas fa-thought-bubble mr-2"></i>想 Hmm...
+                        </div>
+                        <div class="code-block-item looks-block" draggable="true" data-type="show">
+                            <i class="fas fa-eye mr-2"></i>显示
+                        </div>
+                        <div class="code-block-item looks-block" draggable="true" data-type="hide">
+                            <i class="fas fa-eye-slash mr-2"></i>隐藏
+                        </div>
+                        <div class="code-block-item looks-block" draggable="true" data-type="size">
+                            <i class="fas fa-expand-arrows-alt mr-2"></i>将大小设为 100%
+                        </div>
+                    </div>
+                    
+                    <!-- 声音类代码块 -->
+                    <div class="blocks-category" data-category="sound">
+                        <div class="code-block-item sound-block" draggable="true" data-type="play-sound">
+                            <i class="fas fa-play mr-2"></i>播放声音
+                        </div>
+                        <div class="code-block-item sound-block" draggable="true" data-type="stop-sound">
+                            <i class="fas fa-stop mr-2"></i>停止所有声音
+                        </div>
+                        <div class="code-block-item sound-block" draggable="true" data-type="volume">
+                            <i class="fas fa-volume-up mr-2"></i>将音量设为 50%
+                        </div>
+                    </div>
+                    
+                    <!-- 事件类代码块 -->
+                    <div class="blocks-category" data-category="events">
+                        <div class="code-block-item events-block" draggable="true" data-type="when-flag-clicked">
+                            <i class="fas fa-flag mr-2"></i>当绿旗被点击
+                        </div>
+                        <div class="code-block-item events-block" draggable="true" data-type="when-key-pressed">
+                            <i class="fas fa-keyboard mr-2"></i>当空格键被按下
+                        </div>
+                        <div class="code-block-item events-block" draggable="true" data-type="when-clicked">
+                            <i class="fas fa-hand-pointer mr-2"></i>当角色被点击
+                        </div>
+                    </div>
+                    
+                    <!-- 控制类代码块 -->
+                    <div class="blocks-category" data-category="control">
+                        <div class="code-block-item control-block" draggable="true" data-type="wait">
+                            <i class="fas fa-clock mr-2"></i>等待 1 秒
+                        </div>
+                        <div class="code-block-item control-block" draggable="true" data-type="repeat">
+                            <i class="fas fa-redo-alt mr-2"></i>重复 10 次
+                        </div>
+                        <div class="code-block-item control-block" draggable="true" data-type="forever">
+                            <i class="fas fa-infinity mr-2"></i>重复执行
+                        </div>
+                        <div class="code-block-item control-block" draggable="true" data-type="if">
+                            <i class="fas fa-question mr-2"></i>如果 则
+                        </div>
+                    </div>
+                    
+                    <!-- 侦测类代码块 -->
+                    <div class="blocks-category" data-category="sensing">
+                        <div class="code-block-item sensing-block" draggable="true" data-type="touching">
+                            <i class="fas fa-hand-paper mr-2"></i>碰到边缘
+                        </div>
+                        <div class="code-block-item sensing-block" draggable="true" data-type="key-pressed">
+                            <i class="fas fa-keyboard mr-2"></i>按键空格被按下？
+                        </div>
+                        <div class="code-block-item sensing-block" draggable="true" data-type="mouse-x">
+                            <i class="fas fa-mouse-pointer mr-2"></i>鼠标的x坐标
+                        </div>
+                    </div>
+                    
+                    <!-- 运算类代码块 -->
+                    <div class="blocks-category" data-category="operators">
+                        <div class="code-block-item operators-block" draggable="true" data-type="add">
+                            <i class="fas fa-plus mr-2"></i>10 + 5
+                        </div>
+                        <div class="code-block-item operators-block" draggable="true" data-type="subtract">
+                            <i class="fas fa-minus mr-2"></i>10 - 5
+                        </div>
+                        <div class="code-block-item operators-block" draggable="true" data-type="multiply">
+                            <i class="fas fa-times mr-2"></i>10 × 5
+                        </div>
+                        <div class="code-block-item operators-block" draggable="true" data-type="divide">
+                            <i class="fas fa-divide mr-2"></i>10 ÷ 5
+                        </div>
+                    </div>
+                    
+                    <!-- 变量类代码块 -->
+                    <div class="blocks-category" data-category="variables">
+                        <div class="code-block-item variables-block" draggable="true" data-type="set-variable">
+                            <i class="fas fa-tag mr-2"></i>将 变量 设为 0
+                        </div>
+                        <div class="code-block-item variables-block" draggable="true" data-type="change-variable">
+                            <i class="fas fa-plus-minus mr-2"></i>将 变量 增加 1
+                        </div>
+                        <div class="code-block-item variables-block" draggable="true" data-type="show-variable">
+                            <i class="fas fa-eye mr-2"></i>显示变量 变量
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中央编程画布 -->
+            <div class="coding-canvas">
+                <!-- 画布工具栏 -->
+                <div class="absolute top-4 left-4 z-10 flex items-center space-x-2">
+                    <!-- 缩放控制 -->
+                    <div class="bg-white rounded-lg shadow-md p-2 flex items-center space-x-2">
+                        <button class="w-8 h-8 rounded flex items-center justify-center hover:bg-gray-100" onclick="zoomCanvas(-0.1)">
+                            <i class="fas fa-minus text-sm"></i>
+                        </button>
+                        <span class="text-sm font-medium px-2" id="zoomLevel">100%</span>
+                        <button class="w-8 h-8 rounded flex items-center justify-center hover:bg-gray-100" onclick="zoomCanvas(0.1)">
+                            <i class="fas fa-plus text-sm"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- 网格切换 -->
+                    <button class="bg-white rounded-lg shadow-md p-2 w-10 h-10 flex items-center justify-center hover:bg-gray-100" onclick="toggleGrid()" id="gridToggle">
+                        <i class="fas fa-th text-sm"></i>
+                    </button>
+                    
+                    <!-- 清空画布 -->
+                    <button class="bg-white rounded-lg shadow-md p-2 w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-red-500" onclick="clearCanvas()">
+                        <i class="fas fa-trash text-sm"></i>
+                    </button>
+                </div>
+                
+                <!-- 网格背景 -->
+                <div class="canvas-grid" id="canvasGrid"></div>
+                
+                <!-- 画布内容区域 -->
+                <div class="canvas-content" id="canvasContent" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <!-- 示例代码块 -->
+                    <div class="dropped-block events-block" style="top: 50px; left: 100px;" onclick="selectBlock(this)">
+                        <i class="fas fa-flag mr-2"></i>当绿旗被点击
+                    </div>
+                    <div class="dropped-block motion-block"

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>资源库 - AI机器人教学APP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 专业教师端配色方案 */
+        :root {
+            --primary-blue: #2563EB;
+            --secondary-blue: #3B82F6;
+            --light-blue: #DBEAFE;
+            --dark-blue: #1E3A8A;
+            --accent-blue: #60A5FA;
+            --success-green: #059669;
+            --warning-orange: #D97706;
+            --danger-red: #DC2626;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+        }
+        
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+        
+        .primary-bg { background-color: var(--primary-blue); }
+        .secondary-bg { background-color: var(--secondary-blue); }
+        .light-blue-bg { background-color: var(--light-blue); }
+        .success-bg { background-color: var(--success-green); }
+        .warning-bg { background-color: var(--warning-orange); }
+        .danger-bg { background-color: var(--danger-red); }
+        
+        .primary-text { color: var(--primary-blue); }
+        .secondary-text { color: var(--secondary-blue); }
+        .success-text { color: var(--success-green); }
+        .warning-text { color: var(--warning-orange); }
+        .danger-text { color: var(--danger-red); }
+        
+        /* 仪表板卡片样式 */
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        
+        /* 资源卡片样式 */
+        .resource-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .resource-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .resource-card.selected {
+            border: 2px solid var(--primary-blue);
+            background: var(--light-blue);
+        }
+        
+        /* 资源预览样式 */
+        .resource-preview {
+            height: 180px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .resource-preview.video { background: linear-gradient(135deg, #FF6B6B, #FFE66D); }
+        .resource-preview.image { background: linear-gradient(135deg, #4ECDC4, #44A08D); }
+        .resource-preview.document { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .resource-preview.tool { background: linear-gradient(135deg, #FFA726, #FFB74D); }
+        .resource-preview.audio { background: linear-gradient(135deg, #9C27B0, #E1BEE7); }
+        
+        /* 类型标签 */
+        .type-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .type-video { background: #FF6B6B; }
+        .type-image { background: #4ECDC4; }
+        .type-document { background: #667eea; }
+        .type-tool { background: #FFA726; }
+        .type-audio { background: #9C27B0; }
+        
+        /* 收藏标记 */
+        .favorite-btn {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .favorite-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+        
+        .favorite-btn.favorited {
+            color: #FF6B6B;
+        }
+        
+        /* 筛选标签 */
+        .filter-tag {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 2px solid var(--gray-200);
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .filter-tag:hover {
+            border-color: var(--primary-blue);
+            background: var(--light-blue);
+        }
+        
+        .filter-tag.active {
+            background: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+        }
+        
+        /* 搜索框 */
+        .search-box {
+            position: relative;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 48px 12px 16px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+        
+        .search-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .search-btn:hover {
+            background: var(--secondary-blue);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        /* 标签页 */
+        .tab-button {
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+        }
+        
+        .tab-button.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+        
+        .tab-button:not(.active):hover {
+            background: var(--light-blue);
+        }
+        
+        /* 上传拖拽区域 */
+        .upload-zone {
+            border: 2px dashed var(--gray-300);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            background: var(--gray-50);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: var(--primary-blue);
+            background: var(--light-blue);
+        }
+        
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+        
+        /* 预览界面样式 */
+        .preview-container {
+            width: 100%;
+            height: 400px;
+            background: var(--gray-100);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .preview-video {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+        }
+        
+        .preview-image {
+            max-width: 100%;
+            max-    -100%;
+            border-radius: 12px;
+        }
+        
+        .preview-document {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 12px;
+        }
+        
+        /* 标签管理 */
+        .tag-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            background: var(--gray-100);
+            border-radius: 12px;
+            font-size: 12px;
+            margin: 2px;
+        }
+        
+        .tag-item.color-blue { background: rgba(37, 99, 235, 0.1); color: var(--primary-blue); }
+        .tag-item.color-green { background: rgba(5, 150, 105, 0.1); color: var(--success-green); }
+        .tag-item.color-orange { background: rgba(217, 119, 6, 0.1); color: var(--warning-orange); }
+        .tag-item.color-purple { background: rgba(147, 51, 234, 0.1); color: #9333ea; }
+        .tag-item.color-red { background: rgba(220, 38, 38, 0.1); color: var(--danger-red); }
+        
+        .tag-remove {
+            cursor: pointer;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+        
+        .tag-remove:hover {
+            background: rgba(0,0,0,0.4);
+        }
+        
+        /* 批量操作工具栏 */
+        .batch-toolbar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 16px;
+            padding: 16px 24px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .batch-toolbar.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        /* 统计数字 */
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+        
+        /* 使用统计图表 */
+        .usage-chart {
+            height: 60px;
+            width: 100%;
+            background: linear-gradient(90deg, var(--success-green) 0%, var(--warning-orange) 50%, var(--danger-red) 100%);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .resource-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .resource-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-tags {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 20px;
+            }
+        }
+        
+        /* 动画效果 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 推荐标记 */
+        .recommended-badge {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="flex items-center justify-between p-6 bg-white shadow-sm">
+        <!-- 左侧导航 -->
+        <div class="flex items-center space-x-4">
+            <button class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">教学资源库</h1>
+                <p class="text-gray-600">丰富的教学素材和工具集合</p>
+            </div>
+        </div>
+        
+        <!-- 右侧控制区域 -->
+        <div class="flex items-center space-x-4">
+            <!-- 我的收藏按钮 -->
+            <button class="warning-bg text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2" onclick="showFavorites()">
+                <i class="fas fa-heart"></i>
+                <span>我的收藏</span>
+            </button>
+            <!-- 上传资源按钮 -->
+            <button class="primary-bg text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2" onclick="showUploadModal()">
+                <i class="fas fa-upload"></i>
+                <span>上传资源</span>
+            </button>
+            <!-- 教师头像 -->
+            <div class="w-12 h-12 secondary-bg rounded-xl flex items-center justify-center text-white font-semibold text-lg">
+                王
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="max-w-7xl mx-auto p-6 space-y-8">
+        <!-- 资源统计概览 -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+            <!-- 总资源数 -->
+            <div class="dashboard-card p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="stat-number primary-text">2,458</div>
+                        <div class="stat-label">总资源数</div>
+                    </div>
+                    <div class="w-12 h-12 primary-bg rounded-xl flex items-center justify-center">
+                        <i class="fas fa-folder text-white"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 视频资源 -->
+            <div class="dashboard-card p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="stat-number text-red-500">856</div>
+                        <div class="stat-label">视频</div>
+                    </div>
+                    <div class="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-video text-white"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 图片资源 -->
+            <div class="dashboard-card p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="stat-number text-teal-500">1,246</div>
+                        <div class="stat-label">图片</div>
+                    </div>
+                    <div class="w-12 h-12 bg-teal-500 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-image text-white"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 文档资源 -->
+            <div class="dashboard-card p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="stat-number text-blue-500">342</div>
+                        <div class="stat-label">文档</div>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-file-alt text-white"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 工具资源 -->
+            <div class="dashboard-card p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="stat-number text-orange-500">114</div>
+                        <div class="stat-label">工具</div>
+                    </div>
+                    <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-tools text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 标签页导航和筛选 -->
+        <div class="dashboard-card p-6">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-2">
+                    <button class="tab-button active" onclick="switchTab('all', this)">
+                        <i class="fas fa-th-large mr-2"></i>全部资源
+                    </button>
+                    <button class="tab-button" onclick="switchTab('courseware', this)">
+                        <i class="fas fa-presentation mr-2"></i>课件管理
+                    </button>
+                    <button class="tab-button" onclick="switchTab('tools', this)">
+                        <i class="fas fa-toolbox mr-2"></i>教学工具
+                    </button>
+                    <button class="tab-button" onclick="switchTab('recommended', this)">
+                        <i class="fas fa-star mr-2"></i>推荐资源
+                    </button>
+                </div>
+                
+                <!-- 视图切换 -->
+                <div class="flex bg-gray-100 rounded-lg p-1">
+                    <button id="gridView" class="px-3 py-1 rounded text-sm font-medium bg-white shadow-sm primary-text" onclick="switchView('grid')">
+                        <i class="fas fa-th mr-1"></i>网格
+                    </button>
+                    <button id="listView" class="px-3 py-1 rounded text-sm font-medium text-gray-600 hover:text-gray-800" onclick="switchView('list')">
+                        <i class="fas fa-list mr-1"></i>列表
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 筛选和搜索区域 -->
+            <div class="mb-6">
+                <!-- 类型筛选 -->
+                <div class="mb-4">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-filter primary-text mr-2"></i>
+                        资源类型
+                    </h3>
+                    <div class="filter-tags flex flex-wrap gap-3">
+                        <div class="filter-tag active" data-type="all">
+                            <i class="fas fa-th-large mr-2"></i>全部类型
+                        </div>
+                        <div class="filter-tag" data-type="video">
+                            <i class="fas fa-video mr-2"></i>视频
+                        </div>
+                        <div class="filter-tag" data-type="image">
+                            <i class="fas fa-image mr-2"></i>图片
+                        </div>
+                        <div class="filter-tag" data-type="document">
+                            <i class="fas fa-file-alt mr-2"></i>文档
+                        </div>
+                        <div class="filter-tag" data-type="audio">
+                            <i class="fas fa-music mr-2"></i>音频
+                        </div>
+                        <div class="filter-tag" data-type="tool">
+                            <i class="fas fa-tools mr-2"></i>工具
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 搜索和筛选控制 -->
+                <div class="grid md:grid-cols-3 gap-4">
+                    <!-- 搜索框 -->
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="搜索资源名称、标签或描述..." id="searchInput">
+                        <button class="search-btn" onclick="searchResources()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- 学科筛选 -->
+                    <select class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" id="subjectFilter">
+                        <option value="all">全部学科</option>
+                        <option value="programming">编程基础</option>
+                        <option value="ai">AI概念</option>
+                        <option value="robot">机器人控制</option>
+                        <option value="math">数学思维</option>
+                        <option value="science">科学探索</option>
+                        <option value="art">创意艺术</option>
+                    </select>
+                    
+                    <!-- 年级筛选 -->
+                    <select class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" id="gradeFilter">
+                        <option value="all">全部年级</option>
+                        <option value="grade1-2">1-2年级</option>
+                        <option value="grade3-4">3-4年级</option>
+                        <option value="grade5-6">5-6年级</option>
+                        <option value="grade7-8">7-8年级</option>
+                        <option value="grade9">9年级</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 资源网格列表 -->
+        <div id="resourceGridView" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 resource-grid">
+            <!-- 推荐视频资源1 -->
+            <div class="resource-card" data-type="video" data-subject="programming" onclick="previewResource(this, 'res1')">
+                <div class="resource-preview video">
+                    <i class="fas fa-play"></i>
+                    <div class="type-badge type-video">视频</div>
+                    <button class="favorite-btn" onclick="toggleFavorite(event, this)">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <div class="recommended-badge">
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Python函数详解教学视频</h3>
+                    <p class="text-sm text-gray-600 mb-3">详细讲解Python函数的定义、调用和参数传递</p>
+                    
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2 text-sm text-gray-600">
+                            <i class="fas fa-clock"></i>
+                            <span>25分钟</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-600">
+                            <i class="fas fa-download"></i>
+                            <span>1.2k</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="flex flex-wrap gap-1">
+                            <span class="tag-item color-blue">Python</span>
+                            <span class="tag-item color-green">函数</span>
+                            <span class="tag-item color-orange">基础</span>
+                        </div>
+                        <div class="text-xs text-gray-500">2024-03-20</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 图片资源2 -->
+            <div class="resource-card" data-type="image" data-subject="ai" onclick="previewResource(this, 'res2')">
+                <div class="resource-preview image">
+                    <i class="fas fa-image"></i>
+                    <div class="type-badge type-image">图片</div>
+                    <button class="favorite-btn favorited" onclick="toggleFavorite(event, this)">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+                <div class="p-4">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">神经网络结构图解</h3>
+                    <p class="text-sm text-gray-600 mb-3">清晰展示神经网络的层次结构和连接关系</p>
+                    
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2 text-sm text-gray-600">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                            <span>1920x1080</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-600">
+                            <i class="fas fa-download"></i>
+                            <span>856</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="flex flex-wrap gap-1">
+                            <span class="tag-item color-purple">AI</span>
+                            <span class="tag-item color-blue">神经网络</span>
+                            <span class="tag-item color-green">图解</span>
+                        </div>
+                        <div class="text-xs text-gray-500">2024-03-18</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文档资源3 -->
+            <div class="resource-card" data-type="document" data-subject="robot" onclick="previewResource(this, 'res3')">
+                <div class="resource-preview document">
+                    <i class="fas fa-file-pdf"></i>
+                    <div class="type-badge type-document">文档</div>
+                    <button class="favorite-btn" onclick="toggleFavorite(event, this)">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+                <div class="p-4">
+                    <h3 class="text-lg font-bol

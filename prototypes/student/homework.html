@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作业中心 - AI机器人教学APP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 自定义配色方案 */
+        :root {
+            --primary-blue: #3498DB;
+            --secondary-blue: #AED6F1;
+            --vibrant-orange: #F39C12;
+            --friendly-green: #2ECC71;
+            --warm-red: #E74C3C;
+            --bright-yellow: #F1C40F;
+            --fresh-purple: #9B59B6;
+        }
+        
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .primary-bg { background-color: var(--primary-blue); }
+        .secondary-bg { background-color: var(--secondary-blue); }
+        .orange-bg { background-color: var(--vibrant-orange); }
+        .green-bg { background-color: var(--friendly-green); }
+        .red-bg { background-color: var(--warm-red); }
+        .yellow-bg { background-color: var(--bright-yellow); }
+        .purple-bg { background-color: var(--fresh-purple); }
+        
+        .primary-text { color: var(--primary-blue); }
+        .orange-text { color: var(--vibrant-orange); }
+        .green-text { color: var(--friendly-green); }
+        .red-text { color: var(--warm-red); }
+        .yellow-text { color: var(--bright-yellow); }
+        .purple-text { color: var(--fresh-purple); }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        /* 筛选标签 */
+        .filter-tag {
+            transition: all 0.3s ease;
+            border-radius: 20px;
+            padding: 8px 16px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .filter-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+        }
+        
+        .filter-tag.active {
+            background: linear-gradient(135deg, var(--primary-blue), var(--friendly-green));
+            color: white;
+            border-color: var(--primary-blue);
+        }
+        
+        /* 作业卡片 */
+        .homework-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .homework-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        .homework-header {
+            padding: 20px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .homework-content {
+            padding: 20px;
+        }
+        
+        .homework-footer {
+            padding: 16px 20px;
+            background: #f8fafc;
+            border-top: 1px solid #f1f5f9;
+        }
+        
+        /* 状态指示器 */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .status-pending {
+            background: linear-gradient(135deg, var(--vibrant-orange), #F7DC6F);
+        }
+        
+        .status-submitted {
+            background: linear-gradient(135deg, var(--primary-blue), #85C1E9);
+        }
+        
+        .status-completed {
+            background: linear-gradient(135deg, var(--friendly-green), #82E0AA);
+        }
+        
+        .status-overdue {
+            background: linear-gradient(135deg, var(--warm-red), #F1948A);
+        }
+        
+        .status-reviewing {
+            background: linear-gradient(135deg, var(--fresh-purple), #BB8FCE);
+        }
+        
+        /* 优先级指示 */
+        .priority-indicator {
+            width: 4px;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        
+        .priority-high { background: var(--warm-red); }
+        .priority-normal { background: var(--vibrant-orange); }
+        .priority-low { background: var(--friendly-green); }
+        
+        /* 截止时间警告 */
+        .deadline-warning {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .deadline-urgent {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--warm-red);
+        }
+        
+        .deadline-soon {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--vibrant-orange);
+        }
+        
+        .deadline-normal {
+            background: rgba(46, 204, 113, 0.1);
+            color: var(--friendly-green);
+        }
+        
+        /* 搜索框 */
+        .search-box {
+            position: relative;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 50px 12px 20px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+        }
+        
+        .search-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .search-btn:hover {
+            background: var(--friendly-green);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        /* 作业详情模态框 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-header {
+            padding: 24px 24px 0 24px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .modal-body {
+            padding: 24px;
+        }
+        
+        .modal-footer {
+            padding: 0 24px 24px 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        /* 提交按钮 */
+        .submit-btn {
+            background: linear-gradient(135deg, var(--friendly-green), #58D68D);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(46, 204, 113, 0.3);
+        }
+        
+        .submit-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* 老师反馈样式 */
+        .feedback-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        
+        .feedback-score {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, var(--bright-yellow), #F4D03F);
+            color: #8B4513;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        /* 浮动元素 */
+        .floating-element {
+            position: absolute;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        /* 标签页切换 */
+        .tab-button {
+            padding: 12px 24px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+        }
+        
+        .tab-button.active {
+            background: linear-gradient(135deg, var(--primary-blue), var(--friendly-green));
+            color: white;
+        }
+        
+        .tab-button:not(.active):hover {
+            background: rgba(52, 152, 219, 0.1);
+        }
+        
+        /* 导航样式 */
+        .nav-item {
+            transition: all 0.3s ease;
+            border-radius: 15px;
+            flex: 1;
+        }
+        
+        .nav-item:hover {
+            transform: translateY(-3px);
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary-blue), var(--friendly-green));
+            color: white;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .homework-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-tags {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .filter-tag {
+                font-size: 14px;
+                padding: 6px 12px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 20px;
+            }
+        }
+    </style>
+</head>
+<body class="pb-20">
+    <!-- 背景装饰元素 -->
+    <div class="floating-element top-10 right-10 text-4xl opacity-10">
+        <i class="fas fa-clipboard-list" style="color: var(--primary-blue);"></i>
+    </div>
+    <div class="floating-element top-1/4 left-10 text-3xl opacity-10" style="animation-delay: -2s;">
+        <i class="fas fa-tasks" style="color: var(--vibrant-orange);"></i>
+    </div>
+    <div class="floating-element bottom-1/3 right-20 text-2xl opacity-10" style="animation-delay: -4s;">
+        <i class="fas fa-check-circle" style="color: var(--friendly-green);"></i>
+    </div>
+
+    <!-- 顶部导航栏 -->
+    <div class="flex items-center justify-between p-4 bg-white shadow-sm">
+        <!-- 返回按钮和标题 -->
+        <div class="flex items-center space-x-3">
+            <button class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div>
+                <h1 class="text-xl font-bold primary-text">作业中心</h1>
+                <p class="text-sm text-gray-500">管理你的学习任务</p>
+            </div>
+        </div>
+        
+        <!-- 右侧控制 -->
+        <div class="flex items-center space-x-3">
+            <!-- 筛选重置 -->
+            <button id="resetFilter" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors">
+                重置筛选
+            </button>
+            <!-- 个人头像 -->
+            <div class="w-10 h-10 orange-bg rounded-full flex items-center justify-center">
+                <i class="fas fa-user text-white"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="max-w-6xl mx-auto p-4 space-y-6">
+        <!-- 标签页导航 -->
+        <div class="flex flex-wrap gap-2 justify-center">
+            <button class="tab-button active" onclick="switchTab('pending', this)">
+                <i class="fas fa-clock mr-2"></i>待完成 (5)
+            </button>
+            <button class="tab-button" onclick="switchTab('submitted', this)">
+                <i class="fas fa-paper-plane mr-2"></i>已提交 (8)
+            </button>
+            <button class="tab-button" onclick="switchTab('completed', this)">
+                <i class="fas fa-check-circle mr-2"></i>已完成 (12)
+            </button>
+            <button class="tab-button" onclick="switchTab('overdue', this)">
+                <i class="fas fa-exclamation-triangle mr-2"></i>已逾期 (2)
+            </button>
+        </div>
+
+        <!-- 筛选区域 -->
+        <div class="card p-6">
+            <!-- 科目筛选 -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-book primary-text mr-2"></i>
+                    按科目筛选
+                </h3>
+                <div class="filter-tags flex flex-wrap gap-3">
+                    <div class="filter-tag active" data-subject="all">
+                        <i class="fas fa-th-large mr-2"></i>全部科目
+                    </div>
+                    <div class="filter-tag" data-subject="programming">
+                        <i class="fas fa-code mr-2"></i>编程练习
+                    </div>
+                    <div class="filter-tag" data-subject="ai">
+                        <i class="fas fa-brain mr-2"></i>AI实验
+                    </div>
+                    <div class="filter-tag" data-subject="robot">
+                        <i class="fas fa-robot mr-2"></i>机器人任务
+                    </div>
+                    <div class="filter-tag" data-subject="math">
+                        <i class="fas fa-calculator mr-2"></i>数学思维
+                    </div>
+                    <div class="filter-tag" data-subject="project">
+                        <i class="fas fa-project-diagram mr-2"></i>项目作业
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 截止时间和搜索 -->
+            <div class="grid md:grid-cols-2 gap-4">
+                <!-- 截止时间筛选 -->
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-calendar orange-text mr-2"></i>
+                        按截止时间
+                    </h4>
+                    <select class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" id="deadlineFilter">
+                        <option value="all">全部时间</option>
+                        <option value="today">今天截止</option>
+                        <option value="tomorrow">明天截止</option>
+                        <option value="week">本周截止</option>
+                        <option value="month">本月截止</option>
+                    </select>
+                </div>
+                
+                <!-- 搜索功能 -->
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-search green-text mr-2"></i>
+                        搜索作业
+                    </h4>
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="搜索作业标题或内容..." id="searchInput">
+                        <button class="search-btn" onclick="searchHomework()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 筛选结果统计 -->
+            <div class="mt-4 pt-4 border-t border-gray-200">
+                <div class="flex items-center justify-between">
+                    <p class="text-sm text-gray-600">
+                        <span id="resultCount">找到 5 项作业</span>
+                    </p>
+                    <div class="flex items-center space-x-2 text-sm text-gray-500">
+                        <i class="fas fa-sort-amount-down"></i>
+                        <select class="border-none outline-none bg-transparent cursor-pointer" id="sortBy">
+                            <option value="deadline">按截止时间</option>
+                            <option value="subject">按科目分类</option>
+                            <option value="priority">按优先级</option>
+                            <option value="status">按完成状态</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 作业列表 -->
+        <div class="homework-grid grid grid-cols-1 md:grid-cols-2 gap-6" id="homeworkGrid">
+            <!-- 待完成作业卡片1 -->
+            <div class="homework-card" data-subject="programming" data-status="pending" onclick="showHomeworkDetail('hw1')">
+                <div class="priority-indicator priority-high"></div>
+                <div class="homework-header">
+                    <div class="flex items-start justify-between mb-3">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-1">Python循环练习</h3>
+                            <p class="text-sm text-gray-600">编程练习 · 第3章作业</p>
+                        </div>
+                        <div class="status-badge status-pending">
+                            <i class="fas fa-clock"></i>
+                            待完成
+                        </div>
+                    </div>
+                    <div class="deadline-warning deadline-urgent">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        明天 18:00 截止
+                    </div>
+                </div>
+                <div class="homework-content">
+                    <p class="text-gray-700 mb-4">完成5道Python循环结构编程题，包括for循环和while循环的应用练习。</p>
+                    <div class="flex items-center justify-between text-sm text-gray-600">
+                        <div class="flex items-center gap-4">
+                            <span><i class="fas fa-tasks mr-1"></i>0/5 完成</span>
+                            <span><i class="fas fa-clock mr-1"></i>预计60分钟</span>
+                        </div>
+                        <span class="text-xs">发布于 2024-03-20</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 待完成作业卡片2 -->
+            <div class="homework-card" data-subject="ai" data-status="pending" onclick="showHomeworkDetail('hw2')">
+                <div class="priority-indicator priority-normal"></div>
+                <div class="homework-header">
+                    <div class="flex items-start justify-between mb-3">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-1">图像识别实验</h3>
+                            <p class="text-sm text-gray-600">AI实验 · 机器学习入门</p>
+                        </div>
+                        <div class="status-badge status-pending">
+                            <i class="fas fa-clock"></i>
+                            待完成
+                        </div>
+                    </div>
+                    <div class="deadline-warning deadline-soon">
+                        <i class="fas fa-calendar"></i>
+                        后天 20:00 截止
+                    </div>
+                </div>
+                <div class="homework-content">
+                    <p class="text-gray-700 mb-4">使用AI平台训练一个简单的图像分类模型，识别猫和狗的图片。</p>
+                    <div class="flex items-center justify-between text-sm text-gray-600">
+                        <div class="flex items-center gap-4">
+                            <span><i class="fas fa-tasks mr-1"></i>1/3 完成</span>
+                            <span><i class="fas fa-clock mr-1"></i>预计90分钟</span>
+                        </div>
+                        <span class="text-xs">发布于 2024-03-19</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 待完成作业卡片3 -->
+            <div class="homework-card" data-subject="robot" data-status="pending" onclick="showHomeworkDetail('hw3')">
+                <div class="priority-indicator priority-normal"></div>
+                <div class="homework-header">
+                    <div class="flex items-start justify-between mb-3">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-1">机器人迷宫挑战</h3>
+                            <p class="text-sm text-gray-600">机器人任务 · 路径规划</p>
+                        </div>
+                        <div class="status-badge status-pending">
+                            <i class="fas fa-clock"></i>
+                            待完成
+                        </div>
+                    </div>
+                    <div class="deadline-warning deadline-normal">
+                        <i class="fas fa-calendar"></i>
+                        下周三 16:00 截止
+                    </div>
+                </div>
+                <div class="homework-content">
+                    <p class="text-gray-700 mb-4">编程控制机器人走出复杂迷宫，要求找到最短路径并避开障碍物。</p>
+                    <div class="flex items-center justify-between text-sm text-gray-600">
+                        <div class="flex items-center gap-4">
+                            <span><i class="fas fa-tasks mr-1"></i>0/1 完成</span>
+                            <span><i class="fas fa-clock mr-1"></i>预计45分钟</span>
+                        </div>
+                        <span class="text-xs">发布于 2024-03-18</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 已提交作业卡片 -->
+            <div class="homework-card" data-subject="math" data-status="submitted" onclick="showHomeworkDetail('hw4')">
+                <div class="priority-indicator priority-low"></div>
+                <div class="homework-header">
+                    <div class="flex items-start justify-between mb-3">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-1">数学建模练习</h3>
+                            <p class="text-sm text-gray-600">数学思维 · 应用数学</p>
+                        </div>
+                        <div class="status-badge status-submitted">
+                            <i class="fas fa-paper-plane"></i>
+                            已提交
+                        </div>
+                    </div>
+                    <div class="deadline-warning deadline-normal">
+                        <i class="fas fa-check"></i>
+                        已于昨天提交
+                    </div>
+                </div>
+                <div class="homework-content">
+                    <p class="text-gray-700 mb-4">使用数学建模方法解决实际问题，设计最优化方案。</p>
+                    <div class="flex items-center justify-between text-sm text-gray-600">
+                        <div class="flex items-center gap-4">
+                            <span><i class="fas fa-check mr-1"></i>已完成</span>
+                            <span><i class="fas fa-clock mr-1"></i>用时75分钟</span>
+                        </div>
+                        <span class="text-xs">等待批改</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 已完成作业卡片 -->
+            <div class="homework-card" data-subject="project" data-status="completed" onclick="showHomeworkDetail('hw5')">
+                <div class="priority-indicator priority-normal"></div>
+                <div class="homework-header">
+                    <div class="flex items-start justify-between mb-3">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-1">创意小游戏制作</h3>
+                            <p class="text-sm text-gray-600">项目作业 · 综合实践</p>
+                        </div>
+                        <div class="status-badge status-completed">
+                            <i class="fas fa-check-circle"></i>
+                            已完成
+                        </div>
+                    </div>
+                    <div class="deadline-warning deadline-normal">
+                        <i class="fas fa-star"></i>
+                        获得满分评价
+                    </div>
+                </div>
+                <div class="homework-content">
+                    <p class="text-gray-700 mb-4">设计并制作一个有趣的小游戏，展示编程和创意设计能力。</p>
+                    <div class="flex items-center justify-between text-sm text-gray-600">
+                        <div class="flex items-center gap-4">
+                            <span><i class="fas fa-trophy mr-1 text-yellow-500"></i>100分</span>
+                            <span><i class="fas fa-heart mr-1 text-red-500"></i>老师点赞</span>
+                        </div>
+                        <span class="text-xs">上周完成</span>
+                    </div>
+                </div>
+                <!-- 老师反馈 -->
+                <div class="feedback-card">
+                    <div class="flex items-start justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">
+                                王
+                            </div>
+                            <span class="font-medium text-gray-800">王老师</span>
+                        </div>
+                        <div class="feedback-score">
+                            <i class="fas fa-star"></i>
+                            100分
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-700">作品创意很棒！游戏逻辑清晰，界面设计美观。继续保持这种创新精神！</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 暂无结果提示 -->
+        <div id="noResults" class="hidden text-center py-16">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
+                <i class="fas fa-search text-gray-400 text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">没有找到相关作业</h3>
+            <p class="text-gray-500 mb-6">试试调整筛选条件或搜索其他关键词</p>
+            <button class="primary-bg text-white px-6 py-2 rounded-full hover:opacity-90 transition-

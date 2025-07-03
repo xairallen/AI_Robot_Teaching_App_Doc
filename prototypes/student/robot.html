@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>机器人控制 - AI机器人教学APP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 自定义配色方案 */
+        :root {
+            --primary-blue: #3498DB;
+            --secondary-blue: #AED6F1;
+            --vibrant-orange: #F39C12;
+            --friendly-green: #2ECC71;
+            --warm-red: #E74C3C;
+            --bright-yellow: #F1C40F;
+            --fresh-purple: #9B59B6;
+        }
+        
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .primary-bg { background-color: var(--primary-blue); }
+        .secondary-bg { background-color: var(--secondary-blue); }
+        .orange-bg { background-color: var(--vibrant-orange); }
+        .green-bg { background-color: var(--friendly-green); }
+        .red-bg { background-color: var(--warm-red); }
+        .yellow-bg { background-color: var(--bright-yellow); }
+        .purple-bg { background-color: var(--fresh-purple); }
+        
+        .primary-text { color: var(--primary-blue); }
+        .orange-text { color: var(--vibrant-orange); }
+        .green-text { color: var(--friendly-green); }
+        .red-text { color: var(--warm-red); }
+        .yellow-text { color: var(--bright-yellow); }
+        .purple-text { color: var(--fresh-purple); }
+        
+        /* 3D视图区域 */
+        .robot-3d-view {
+            background: linear-gradient(135deg, #f0f2f5 0%, #d6e8f5 100%);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 机器人模型 */
+        .robot-model {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--friendly-green));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: robotMove 4s ease-in-out infinite;
+        }
+        
+        @keyframes robotMove {
+            0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+            25% { transform: translate(-40%, -50%) rotate(15deg); }
+            50% { transform: translate(-50%, -45%) rotate(0deg); }
+            75% { transform: translate(-60%, -50%) rotate(-15deg); }
+        }
+        
+        /* 环境场景装饰 */
+        .scene-object {
+            position: absolute;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .obstacle {
+            background: var(--warm-red);
+            width: 60px;
+            height: 60px;
+        }
+        
+        .target {
+            background: var(--bright-yellow);
+            width: 50px;
+            height: 50px;
+        }
+        
+        .pickup {
+            background: var(--fresh-purple);
+            width: 40px;
+            height: 40px;
+        }
+        
+        /* 控制面板 */
+        .control-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
+        }
+        
+        /* 方向控制按钮 */
+        .direction-pad {
+            position: relative;
+            width: 150px;
+            height: 150px;
+        }
+        
+        .direction-btn {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .direction-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .direction-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-up {
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--friendly-green), #58D68D);
+        }
+        
+        .btn-down {
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--warm-red), #EC7063);
+        }
+        
+        .btn-left {
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, var(--vibrant-orange), #F7DC6F);
+        }
+        
+        .btn-right {
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, var(--primary-blue), #7FB3D3);
+        }
+        
+        .btn-center {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, var(--fresh-purple), #BB8FCE);
+            border-radius: 50%;
+        }
+        
+        /* 动作序列编程区 */
+        .action-sequence {
+            min-height: 100px;
+            background: #f8fafc;
+            border: 2px dashed #cbd5e0;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            overflow-x: auto;
+        }
+        
+        .action-block {
+            min-width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: move;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .action-block:hover {
+            transform: scale(1.05);
+        }
+        
+        .action-block .action-icon {
+            font-size: 1.2rem;
+            margin-bottom: 2px;
+        }
+        
+        .action-block .remove-btn {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 16px;
+            height: 16px;
+            background: var(--warm-red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .action-block:hover .remove-btn {
+            opacity: 1;
+        }
+        
+        /* 传感器数据面板 */
+        .sensor-data {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .sensor-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            transition: background-color 0.3s ease;
+        }
+        
+        .sensor-item:hover {
+            background: rgba(52, 152, 219, 0.05);
+        }
+        
+        .sensor-item:last-child {
+            border-bottom: none;
+        }
+        
+        .sensor-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .sensor-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .sensor-unit {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        
+        /* 电池和连接状态 */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .status-connected {
+            background: rgba(46, 204, 113, 0.1);
+            color: var(--friendly-green);
+        }
+        
+        .status-disconnected {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--warm-red);
+        }
+        
+        .battery-indicator {
+            width: 60px;
+            height: 24px;
+            border: 2px solid #cbd5e0;
+            border-radius: 4px;
+            position: relative;
+            background: #f8fafc;
+        }
+        
+        .battery-level {
+            height: 100%;
+            border-radius: 2px;
+            transition: all 0.5s ease;
+        }
+        
+        .battery-tip {
+            position: absolute;
+            right: -4px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 12px;
+            background: #cbd5e0;
+            border-radius: 0 2px 2px 0;
+        }
+        
+        /* 工具栏 */
+        .toolbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .toolbar-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            background: transparent;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+        
+        .toolbar-btn:hover {
+            background: rgba(52, 152, 219, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .toolbar-btn.active {
+            background: linear-gradient(135deg, var(--primary-blue), var(--friendly-green));
+            color: white;
+        }
+        
+        .toolbar-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .toolbar-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        /* 视角控制 */
+        .view-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .view-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            color: #374151;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .view-btn:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+        
+        /* 执行按钮 */
+        .execute-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--friendly-green), #58D68D);
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .execute-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(46, 204, 113, 0.5);
+        }
+        
+        .execute-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .execute-btn.running {
+            background: linear-gradient(135deg, var(--warm-red), #EC7063);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .execute-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+            animation: shine 2s infinite;
+            opacity: 0;
+        }
+        
+        .execute-btn:hover::before {
+            opacity: 1;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .sensor-data {
+                width: 100%;
+                margin-bottom: 1rem;
+            }
+            
+            .toolbar {
+                width: 100%;
+                margin-top: 1rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .direction-pad {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .direction-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .robot-model {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5rem;
+            }
+        }
+        
+        /* 模拟数据更新动画 */
+        .data-update {
+            animation: dataFlash 0.5s ease-in-out;
+        }
+        
+        @keyframes dataFlash {
+            0%, 100% { background: transparent; }
+            50% { background: rgba(52, 152, 219, 0.1); }
+        }
+        
+        /* 任务完成效果 */
+        .task-complete {
+            animation: taskSuccess 1s ease-in-out;
+        }
+        
+        @keyframes taskSuccess {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); box-shadow: 0 0 30px rgba(46, 204, 113, 0.6); }
+            100% { transform: scale(1); }
+        }
+        
+        /* 错误提示 */
+        .error-indicator {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--warm-red);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+        
+        .error-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* 加载动画 */
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 主容器 -->
+    <div class="flex flex-col h-screen">
+        <!-- 顶部导航栏 -->
+        <div class="flex items-center justify-between p-4 bg-white shadow-sm">
+            <!-- 左侧控制 -->
+            <div class="flex items-center space-x-3">
+                <button class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 primary-bg rounded-full flex items-center justify-center">
+                        <i class="fas fa-robot text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold primary-text">机器人控制</h1>
+                        <p class="text-sm text-gray-500">编程控制你的机器人</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧控制 -->
+            <div class="flex items-center space-x-3">
+                <!-- 帮助按钮 -->
+                <button class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                    <i class="fas fa-question"></i>
+                </button>
+                <!-- 个人头像 -->
+                <div class="w-10 h-10 orange-bg rounded-full flex items-center justify-center">
+                    <i class="fas fa-user text-white"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主工作区域 -->
+        <div class="flex flex-1 overflow-hidden p-4 gap-4">
+            <!-- 左侧数据面板 -->
+            <div class="w-80 flex flex-col gap-4">
+                <!-- 传感器数据 -->
+                <div class="sensor-data flex-1">
+                    <div class="p-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-chart-line primary-text mr-2"></i>
+                            传感器数据
+                        </h3>
+                    </div>
+                    
+                    <div class="p-2">
+                        <div class="sensor-item">
+                            <div class="flex items-center gap-3">
+                                <div class="sensor-icon primary-bg">
+                                    <i class="fas fa-ruler"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-600">超声波距离</div>
+                                    <div class="sensor-value">15.6 <span class="sensor-unit">cm</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="sensor-item">
+                            <div class="flex items-center gap-3">
+                                <div class="sensor-icon orange-bg">
+                                    <i class="fas fa-lightbulb"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-600">光照强度</div>
+                                    <div class="sensor-value">452 <span class="sensor-unit">lux</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="sensor-item">
+                            <div class="flex items-center gap-3">
+                                <div class="sensor-icon green-bg">
+                                    <i class="fas fa-compass"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-600">方向角度</div>
+                                    <div class="sensor-value">127° <span class="sensor-unit">NE</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="sensor-item">
+                            <div class="flex items-center gap-3">
+                                <div class="sensor-icon purple-bg">
+                                    <i class="fas fa-thermometer-half"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-600">温度</div>
+                                    <div class="sensor-value">24.8 <span class="sensor-unit">°C</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="sensor-item">
+                            <div class="flex items-center gap-3">
+                                <div class="sensor-icon red-bg">
+                                    <i class="fas fa-hand-paper"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-600">触碰传感器</div>
+                                    <div class="sensor-value">未触发</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 连接和电池状态 -->
+                <div class="sensor-data">
+                    <div class="p-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-wifi green-text mr-2"></i>
+                            系统状态
+                        </h3>
+                    </div>
+                    
+                    <div class="p-4 space-y-4">
+                        <!-- 连接状态 -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-gray-700">连接状态</span>
+                            <div class="status-indicator status-connected">
+                                <i class="fas fa-circle text-xs"></i>
+                                已连接
+                            </div>
+                        </div>
+                        
+                        <!-- 电池状态 -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-gray-700">电池电量</span>
+                            <div class="flex items-center gap-3">
+                                <div class="battery-indicator">
+                                    <div class="battery-level green-bg" style="width: 78%;"></div>
+                                    <div class="battery-tip"></div>
+                                </div>
+                                <span class="text-sm font-semibold green-text">78%</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 运行时间 -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-gray-700">运行时间</span>
+                            <span class="text-sm font-semibold text-gray-800">00:05:42</span>
+                        </div>
+                        
+                        <!-- 信号强度 -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-gray-700">信号强度</span>
+                            <div class="flex items-center gap-1">
+                                <div class="w-2 h-4 green-bg rounded-sm"></div>
+                                <div class="w-2 h-4 green-bg rounded-sm"></div>
+                                <div class="w-2 h-4 green-bg rounded-sm"></div>
+                                <div class="w-2 h-4 green-bg rounded-sm"></div>
+                                <div class="w-2 h-4 bg-gray-300 rounded-sm"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中央3D视图区域 -->
+            <div class="flex-1 flex flex-col gap-4">
+                <!-- 3D视图 -->
+                <div class="robot-3d-view flex-1 relative">
+                    <!-- 错误提示 -->
+                    <div class="error-indicator" id="errorIndicator">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <span id="errorMessage">机器人碰撞检测</span>
+                    </div>
+                    
+                    <!-- 视角控制 -->
+                    <div class="view-controls">
+                        <button class="view-btn" title="重置视角" onclick="resetView()">
+                            <i class="fas fa-home"></i>
+                        </button>
+                        <button class="view-btn" title="放大" onclick="zoomIn()">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="view-btn" title="缩小" onclick="zoomOut()">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button class="view-btn" title="旋转" onclick="toggleRotate()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- 机器人模型 -->
+                    <div class="robot-model" id="robotModel">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    
+                    <!-- 环境场景物体 -->
+                    <div class="scene-object obstacle" style="top: 20%; left: 15%;">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <div class="scene-object target" style="top: 30%; right: 20%;">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="scene-object pickup" style="bottom: 25%; left: 25%;">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <div class="scene-object obstacle" style="bottom: 20%; right: 30%;">
+                        <i class="fas fa-square"></i>
+                    </div>
+                    
+                    <!-- 模拟状态指示器 -->
+                    <div class="absolute bottom-4 left-4 bg-white bg-opacity-90 rounded-lg p-3">
+                        <div class="flex items-center gap-2 text-sm">
+                            <div class="w-2 h-2 green-bg rounded-full animate-pulse"></div>
+                            <span class="font-medium">模拟运行中</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部控制面板 -->
+                <div class="control-panel p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- 方向控制 -->
+                        <div class="flex flex-col items-center">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-gamepad primary-text mr-2"></i>
+                                方向控制
+                            </h4>
+                            <div class="direction-pad">
+                                <button class="direction-btn btn-up" onclick="moveRobot('forward')">
+                                    <i class="fas fa-arrow-up"></i>
+                                </button>
+                                <button class="direction-btn btn-down" onclick="moveRobot('backward')">
+                                    <i class="fas fa-arrow-down"></i>
+                                </button>
+                                <button class="direction-btn btn-left" onclick="moveRobot('left')">
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                                <button class="direction-btn btn-right" onclick="moveRobot('right')">
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                                <button class="direction-btn btn-center" onclick="stopRobot()">
+                                    <i class="fas fa-stop"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 动作序列编程区 -->
+                        <div class="flex flex-col">
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-list-ol orange-text mr-2"></i>
+                                动作序列
+                            </h4>
+                            <div

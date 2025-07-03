@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程管理 - AI机器人教学APP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* 专业教师端配色方案 */
+        :root {
+            --primary-blue: #2563EB;
+            --secondary-blue: #3B82F6;
+            --light-blue: #DBEAFE;
+            --dark-blue: #1E3A8A;
+            --accent-blue: #60A5FA;
+            --success-green: #059669;
+            --warning-orange: #D97706;
+            --danger-red: #DC2626;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+        }
+        
+        body {
+            font-family: 'Quicksand', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+        
+        .primary-bg { background-color: var(--primary-blue); }
+        .secondary-bg { background-color: var(--secondary-blue); }
+        .light-blue-bg { background-color: var(--light-blue); }
+        .success-bg { background-color: var(--success-green); }
+        .warning-bg { background-color: var(--warning-orange); }
+        .danger-bg { background-color: var(--danger-red); }
+        
+        .primary-text { color: var(--primary-blue); }
+        .secondary-text { color: var(--secondary-blue); }
+        .success-text { color: var(--success-green); }
+        .warning-text { color: var(--warning-orange); }
+        .danger-text { color: var(--danger-red); }
+        
+        /* 仪表板卡片样式 */
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        
+        /* 课程卡片样式 */
+        .course-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .course-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .course-card.selected {
+            border: 2px solid var(--primary-blue);
+            background: var(--light-blue);
+        }
+        
+        /* 课程封面样式 */
+        .course-cover {
+            height: 180px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .course-cover.programming { background: linear-gradient(135deg, #4A90E2, #5BA3F3); }
+        .course-cover.ai { background: linear-gradient(135deg, #9013FE, #A855F7); }
+        .course-cover.robot { background: linear-gradient(135deg, #4CAF50, #66BB6A); }
+        .course-cover.math { background: linear-gradient(135deg, #FF9800, #FBB040); }
+        .course-cover.game { background: linear-gradient(135deg, #E91E63, #F06292); }
+        
+        /* 难度指示器 */
+        .difficulty-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .difficulty-beginner { background: var(--success-green); }
+        .difficulty-intermediate { background: var(--warning-orange); }
+        .difficulty-advanced { background: var(--danger-red); }
+        
+        /* 状态标签 */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .status-published { background: var(--success-green); }
+        .status-draft { background: var(--gray-400); }
+        .status-pending { background: var(--warning-orange); }
+        .status-archived { background: var(--gray-500); }
+        
+        /* 筛选标签 */
+        .filter-tag {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 2px solid var(--gray-200);
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .filter-tag:hover {
+            border-color: var(--primary-blue);
+            background: var(--light-blue);
+        }
+        
+        .filter-tag.active {
+            background: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+        }
+        
+        /* 搜索框 */
+        .search-box {
+            position: relative;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 48px 12px 16px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+        
+        .search-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .search-btn:hover {
+            background: var(--secondary-blue);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        /* 标签页 */
+        .tab-button {
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+        }
+        
+        .tab-button.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+        
+        .tab-button:not(.active):hover {
+            background: var(--light-blue);
+        }
+        
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+        
+        /* 批量操作工具栏 */
+        .batch-toolbar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 16px;
+            padding: 16px 24px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .batch-toolbar.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        /* 统计数字 */
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+        
+        /* 课程编辑器样式 */
+        .course-editor {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            min-height: 300px;
+            padding: 16px;
+        }
+        
+        .toolbar-btn {
+            padding: 8px 12px;
+            border: 1px solid var(--gray-300);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toolbar-btn:hover {
+            background: var(--light-blue);
+            border-color: var(--primary-blue);
+        }
+        
+        .toolbar-btn.active {
+            background: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+        }
+        
+        /* 图表容器 */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .course-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .course-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-tags {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 20px;
+            }
+        }
+        
+        /* 动画效果 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 拖拽排序 */
+        .sortable-item {
+            cursor: move;
+        }
+        
+        .sortable-item.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+        
+        .drop-zone {
+            border: 2px dashed var(--primary-blue);
+            background: var(--light-blue);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            color: var(--primary-blue);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="flex items-center justify-between p-6 bg-white shadow-sm">
+        <!-- 左侧导航 -->
+        <div class="flex items-center space-x-4">
+            <button class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">课程管理</h1>
+                <p class="text-gray-600">创建和管理教学课程内容</p>
+            </div>
+        </div>
+        
+        <!-- 右侧控制区域 -->
+        <div class="flex items-center space-x-4">
+            <!-- 导入课程按钮 -->
+            <button class="success-bg text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2" onclick="importCourse()">
+                <i class="fas fa-upload"></i>
+                <span>导入课程</span>
+            </button>
+            <!-- 创建课程按钮 -->
+            <button class="primary-bg text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2" onclick="showCreateCourseModal()">
+                <i class="fas fa-plus"></i>
+                <span>创建课程</span>
+            </button>
+            <!-- 教师头像 -->
+            <div class="w-12 h-12 secondary-bg rounded-xl flex items-center justify-center text-white font-semibold text-lg">
+                王
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="max-w-7xl mx-auto p-6 space-y-8">
+        <!-- 课程统计概览 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- 总课程数 -->
+            <div class="dashboard-card p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="stat-number primary-text">24</div>
+                        <div class="stat-label">总课程数</div>
+                    </div>
+                    <div class="w-12 h-12 primary-bg rounded-xl flex items-center justify-center">
+                        <i class="fas fa-book text-white"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 已发布课程 -->
+            <div class="dashboard-card p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="stat-number success-text">18</div>
+                        <div class="stat-label">已发布</div>
+                    </div>
+                    <div class="w-12 h-12 success-bg rounded-xl flex items-center justify-center">
+                        <i class="fas fa-check-circle text-white"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 草稿课程 -->
+            <div class="dashboard-card p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="stat-number warning-text">6</div>
+                        <div class="stat-label">草稿中</div>
+                    </div>
+                    <div class="w-12 h-12 warning-bg rounded-xl flex items-center justify-center">
+                        <i class="fas fa-edit text-white"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 总使用班级 -->
+            <div class="dashboard-card p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="stat-number text-purple-500">42</div>
+                        <div class="stat-label">使用班级</div>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-users text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 标签页导航 -->
+        <div class="dashboard-card p-6">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-2">
+                    <button class="tab-button active" onclick="switchTab('library', this)">
+                        <i class="fas fa-globe mr-2"></i>课程库
+                    </button>
+                    <button class="tab-button" onclick="switchTab('my-courses', this)">
+                        <i class="fas fa-user-edit mr-2"></i>我的课程
+                    </button>
+                    <button class="tab-button" onclick="switchTab('analytics', this)">
+                        <i class="fas fa-chart-bar mr-2"></i>统计分析
+                    </button>
+                </div>
+                
+                <!-- 视图切换 -->
+                <div class="flex bg-gray-100 rounded-lg p-1">
+                    <button id="gridView" class="px-3 py-1 rounded text-sm font-medium bg-white shadow-sm primary-text" onclick="switchView('grid')">
+                        <i class="fas fa-th mr-1"></i>网格
+                    </button>
+                    <button id="listView" class="px-3 py-1 rounded text-sm font-medium text-gray-600 hover:text-gray-800" onclick="switchView('list')">
+                        <i class="fas fa-list mr-1"></i>列表
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 筛选和搜索区域 -->
+            <div class="mb-6">
+                <!-- 分类筛选 -->
+                <div class="mb-4">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-tags primary-text mr-2"></i>
+                        课程分类
+                    </h3>
+                    <div class="filter-tags flex flex-wrap gap-3">
+                        <div class="filter-tag active" data-category="all">
+                            <i class="fas fa-th-large mr-2"></i>全部课程
+                        </div>
+                        <div class="filter-tag" data-category="programming">
+                            <i class="fas fa-code mr-2"></i>编程基础
+                        </div>
+                        <div class="filter-tag" data-category="ai">
+                            <i class="fas fa-brain mr-2"></i>AI概念
+                        </div>
+                        <div class="filter-tag" data-category="robot">
+                            <i class="fas fa-robot mr-2"></i>机器人控制
+                        </div>
+                        <div class="filter-tag" data-category="math">
+                            <i class="fas fa-calculator mr-2"></i>数学思维
+                        </div>
+                        <div class="filter-tag" data-category="game">
+                            <i class="fas fa-gamepad mr-2"></i>游戏开发
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 搜索和筛选控制 -->
+                <div class="grid md:grid-cols-3 gap-4">
+                    <!-- 搜索框 -->
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="搜索课程标题或关键词..." id="searchInput">
+                        <button class="search-btn" onclick="searchCourses()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- 难度筛选 */
+                    <select class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" id="difficultyFilter">
+                        <option value="all">全部难度</option>
+                        <option value="beginner">初级</option>
+                        <option value="intermediate">中级</option>
+                        <option value="advanced">高级</option>
+                    </select>
+                    
+                    <!-- 状态筛选 -->
+                    <select class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" id="statusFilter">
+                        <option value="all">全部状态</option>
+                        <option value="published">已发布</option>
+                        <option value="draft">草稿</option>
+                        <option value="pending">待审核</option>
+                        <option value="archived">已归档</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 课程内容区域 -->
+        <div id="courseLibrary" class="tab-content">
+            <!-- 课程网格视图 -->
+            <div id="courseGridView" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 course-grid">
+                <!-- 课程卡片1 -->
+                <div class="course-card" data-category="programming" data-difficulty="beginner" data-status="published" onclick="selectCourse(this)">
+                    <div class="course-cover programming">
+                        <i class="fab fa-python"></i>
+                        <div class="difficulty-badge difficulty-beginner">初级</div>
+                        <div class="absolute top-3 left-3 status-badge status-published">
+                            <i class="fas fa-circle text-xs"></i>
+                            已发布
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">Python编程启蒙</h3>
+                        <p class="text-sm text-gray-600 mb-3">通过趣味小游戏学习Python基础语法，适合6-8岁儿童入门编程</p>
+                        
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-4 text-sm text-gray-600">
+                                <span><i class="fas fa-users mr-1"></i>6-8岁</span>
+                                <span><i class="fas fa-clock mr-1"></i>8课时</span>
+                            </div>
+                            <div class="text-sm font-semibold primary-text">5个班级在用</div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xs font-semibold">王</div>
+                                <span class="text-sm text-gray-600">王老师</span>
+                            </div>
+                            <div class="flex items-center gap-1 text-yellow-500">
+                                <i class="fas fa-star text-sm"></i>
+                                <span class="text-sm font-semibold">4.8</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 课程卡片2 -->
+                <div class="course-card" data-category="ai" data-difficulty="intermediate" data-status="published" onclick="selectCourse(this)">
+                    <div class="course-cover ai">
+                        <i class="fas fa-brain"></i>
+                        <div class="difficulty-badge difficulty-intermediate">中级</div>
+                        <div class="absolute top-3 left-3 status-badge status-published">
+                            <i class="fas fa-circle text-xs"></i>
+                            已发布
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">AI图像识别实验</h3>
+                        <p class="text-sm text-gray-600 mb-3">学习机器学习基础概念，制作简单的图像分类模型</p>
+                        
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-4 text-sm text-gray-600">
+                                <span><i class="fas fa-users mr-1"></i>9-11岁</span>
+                                <span><i class="fas fa-clock mr-1"></i>12课时</span>
+                            </div>
+                            <div class="text-sm font-semibold primary-text">3个班级在用</div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-xs font-semibold">李</div>
+                                <span class="text-sm text-gray-600">李老师</span>
+                            </div>
+                            <div class="flex items-center gap-1 text-yellow-500">
+                                <i class="fas fa-star text-sm"></i>
+                                <span class="text-sm font-semibold">4.6</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 课程卡片3 -->
+                <div class="course-card" data-category="robot" data-difficulty="intermediate" data-status="draft" onclick="selectCourse(this)">
+                    <div class="course-cover robot">
+                        <i class="fas fa-robot"></i>
+                        <div class="difficulty-badge difficulty-intermediate">中级</div>
+                        <div class="absolute top-3 left-3 status-badge status-draft">
+                            <i class="fas fa-edit text-xs"></i>
+                            草稿
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">智能机器人编程</h3>
+                        <p class="text-sm text-gray-600 mb-3">学习如何编程控制机器人，完成各种有趣的任务和挑战</p>
+                        
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-4 text-sm text-gray-600">
+                                <span><i class="fas fa-users mr-1"></i>10-12岁</span>
+                                <span><i class="fas fa-clock mr-1"></i>16课时</span>
+                            </div>
+                            <div class="text-sm font-semibold text-gray-400">未发布</div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-xs font-semibold">张</div>
+                                <span class="text-sm text-gray-600">张老师</span>
+                            </div>
+                            <div class="flex items-center gap-1 text-gray-400">
+                                <i class="fas fa-star text-sm"></i>
+                                <span class="text-sm">未评分</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 课程卡片4 -->
+                <div class="course-card" data-category="game" data-difficulty="advanced" data-status="published" onclick="selectCourse(this)">
+                    <div class="course-cover game">
+                        <i class="fas fa-gamepad"></i>
+                        <div class="difficulty-badge difficulty-advanced">高级</div>
+                        <div class="absolute top-3 left-3 status-badge status-published">
+                            <i class="fas fa-circle text-xs"></i>
+                            已发布
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">2D游戏开发实战</h3>
+                        <p class="text-sm text-gray-600 mb-3">从零开始制作自己的2D小游戏，学习游戏开发的基础知识</p>
+                        
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-4 text-sm text-gray-600">
+                                <span><i class="fas fa-users mr-1"></i>12-14岁</span>
+                                <span><i class="fas fa-clock mr-1"></i>20课时</span>
+                            </div>
+                            <div class="text-sm font-semibold primary-text">8个班级在用</div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w
